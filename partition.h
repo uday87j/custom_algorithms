@@ -11,6 +11,8 @@ using std::endl;
 // custom algorithms (ca)
 namespace ca    {
 
+    extern void test_partition();
+
     template<typename T>
     void print_container(const T& b, const T& e, std::ostream& out = cout)  {
         std::copy(b, e, std::ostream_iterator<int>(out, ""));
@@ -22,19 +24,20 @@ namespace ca    {
             auto b  = first;
             auto e  = std::next(last, -1);
 
-            cout << "\nf:" << *b << " n:" << *n << " last: " << *e << endl;
-            
+            //cout << "\nf:" << *b << " n:" << *n << " last: " << *e << endl;
+
             while(b < e)    {
-                
+                b = first;
+                e = std::next(last, -1);
+
                 while((*b <= *n) && (b < n)) std::advance(b, 1);
                 while((*e >= *n) && (e > n)) std::advance(e, -1);
-                cout << "\n Swapping " << *b << " and " << *e << endl;
+                //cout << "\n Swapping " << *b << " and " << *e << endl;
                 std::swap(*b, *e);
 
-                print_container(first, last); cout << endl;
-                cout << "\nf:" << *b << " n:" << *n << " last: " << *e << endl;
+                //print_container(first, last); cout << endl;
+                //cout << "\nf:" << *b << " n:" << *n << " last: " << *e << endl;
             }
-            //print_container(first, last); cout << endl;
         }
 
 }
