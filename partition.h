@@ -30,9 +30,7 @@ namespace ca    {
     template<typename RANDOM_ITR>
         RANDOM_ITR pivot_partition(RANDOM_ITR first, RANDOM_ITR last, RANDOM_ITR n)    {
 
-            //cout << "\n Swapping " << *first << " and " << *n << endl;
             std::swap(*first, *n);
-            //print_container(first, last);   cout << endl;
 
             auto b  = std::next(first, 0);
             auto e  = std::next(last, -1);
@@ -45,23 +43,15 @@ namespace ca    {
                 while(*e >= p)  std::advance(e, -1);
 
                 if(b < e)   {
-                    //cout << "\nSwapping " << *b << " and " << *e << endl;
                     std::iter_swap(b, e);  ++swap_count;
                 }
-                
-                //print_container(first, last);
-                //cout << "\nf:" << *b << " p:" << p << " e: " << *e << endl;
             }
 
             if(e >= first)   {
-                //cout << "\n Swapping " << *first << " and " << *e << endl;
                 std::iter_swap(first, e);
                 return e;
             }
 
-            //print_container(first, last); cout << endl;
-            //cout << "\nf:" << *b << " n:" << *n << " last: " << *e << endl;
-            //cout << "\nNumber of swaps: " << swap_count << endl;
             return first;
         }
 
@@ -70,7 +60,6 @@ namespace ca    {
             auto insert_itr = first;
 
             while((insert_itr != last) && p(*insert_itr))  {
-                //std::advance(insert_itr, 1);
                 ++insert_itr;
             }
 
@@ -78,8 +67,6 @@ namespace ca    {
             while(itr != last)  {
 
                 while((false == p(*itr)) && (itr != last)) {
-                    //cout << "\n*itr: " << *itr << endl;
-                    //std::advance(itr, 1);
                     ++itr;
                 }
 
@@ -87,14 +74,8 @@ namespace ca    {
                     return insert_itr;
                 }
                 else    {
-                    //cout << "\nSwapping " << *insert_itr << " and " << *itr << endl;
-                    //std::swap(*insert_itr, *itr);
                     std::iter_swap(insert_itr, itr);
-                    //print_container(first, last);
-                    //std::advance(insert_itr, 1);
                     ++insert_itr;
-                    //itr = std::next(insert_itr, 1);
-                    //std::advance(itr, 1);
                     ++itr;
                 }
             }
