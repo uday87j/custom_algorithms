@@ -13,55 +13,54 @@ using namespace std::chrono;
 
 namespace ca  {
 
-    void test_pivot_partition() {
-        array<int, 1000000> iarr = {};
+    void test_range_partition()  {
+
+        array<int, 2000000> iarr = {};
         std::random_device rd;
         auto barr   = begin(iarr);
         auto earr   = end(iarr);
 
-        std::iota(barr, earr, 0);
+        std::iota(barr, earr, 5);
         std::reverse(barr, earr);
 
-        std::shuffle(barr, earr, rd);
+        //std::shuffle(barr, earr, rd);
         //cout << "\nOriginal array:\n";
         //print_container(barr, earr);  cout << endl;
-
-        auto iarr2  = iarr;
-        auto barr2  = begin(iarr2);
-        auto earr2  = std::end(iarr2);
-        auto n2     = std::next(barr2, std::distance(barr2, earr2)/2);
 
         auto n  = std::next(barr, std::distance(barr, earr)/2);
         auto p  = *n;
         cout << "\nPivot partitioning the array: " << *n << "\n";
 
-        cout << "\nTesting pivot_partition:\n";
+        auto pred   = [p](const int i) {
+                        return i <= p;
+                    };
+
         auto start  = system_clock::now();
-        auto split  = std::partition(barr, earr, [p](const int i) {
-                return i <= p;
-                });
-        auto end    = system_clock::now();
-        cout << "\nSplit occurs at: " << *split << endl;
-        //duration<double> sec    = (end - start);
-        cout << "\nTime taken to std::partition: " << duration_cast<nanoseconds>(end - start).count() << " nano-seconds\n";
-        //print_container(begin(iarr), std::end(iarr));  cout << endl;
+        auto split  = std::partition(barr, earr, pred);
+        auto finish = system_clock::now();
+        cout << "\nTime taken to std::partition: " << 
+            duration_cast<nanoseconds>(finish - start).count() << " nano-seconds\n";
 
-        
-        //print_container(barr2, earr2);  cout << endl;
-
-        cout << "Pivot n2: " << *n2 << endl;
-        p   = *n2;
-
+        std::sort(begin(iarr), end(iarr));
+        //std::shuffle(begin(iarr), end(iarr), rd);
+        std::reverse(begin(iarr), end(iarr));
         start  = system_clock::now();
-        //pivot_partition(barr2, earr2, n2);
-        split   = pred_partition(barr2, earr2, [p](const int i) {
-                return i <= p;
-                });
-        end    = system_clock::now();
+        split  = pivot_partition(barr, earr, n);
+        finish = system_clock::now();
+        cout << "\nTime taken to pivot_partition: " << 
+            duration_cast<nanoseconds>(finish - start).count() << " nano-seconds\n";
+
+        std::sort(begin(iarr), end(iarr));
+        //std::shuffle(begin(iarr), end(iarr), rd);
+        std::reverse(begin(iarr), end(iarr));
+        start  = system_clock::now();
+        split  = pred_partition(barr, earr, pred);
+        finish = system_clock::now();
+        cout << "\nTime taken to pred_partition: " << 
+            duration_cast<nanoseconds>(finish - start).count() << " nano-seconds\n";
+
+        //print_container(begin(iarr), std::end(iarr));  cout << endl;
         cout << "\nSplit occurs at: " << *split << endl;
-        //sec    = (end - start);
-        cout << "\nTime taken to partition: " << duration_cast<nanoseconds>(end - start).count() << " nano-seconds\n";
-        //print_container(barr2, earr2);  cout << endl;
     }
 
     void test_std_partition()   {

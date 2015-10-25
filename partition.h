@@ -11,8 +11,8 @@ using std::endl;
 // custom algorithms (ca)
 namespace ca    {
 
-    extern void test_pivot_partition();
     extern void test_std_partition();
+    extern void test_range_partition();
 
     template<typename T>
     void print_container(const T& b, const T& e, std::ostream& out = cout)  {
@@ -28,7 +28,7 @@ namespace ca    {
     // and those to the right of it are greater than it
     // Complexity: O(n)
     template<typename RANDOM_ITR>
-        void pivot_partition(RANDOM_ITR first, RANDOM_ITR last, RANDOM_ITR n)    {
+        RANDOM_ITR pivot_partition(RANDOM_ITR first, RANDOM_ITR last, RANDOM_ITR n)    {
 
             //cout << "\n Swapping " << *first << " and " << *n << endl;
             std::swap(*first, *n);
@@ -46,7 +46,7 @@ namespace ca    {
 
                 if(b < e)   {
                     //cout << "\nSwapping " << *b << " and " << *e << endl;
-                    std::swap(*b, *e);  ++swap_count;
+                    std::iter_swap(b, e);  ++swap_count;
                 }
                 
                 //print_container(first, last);
@@ -55,12 +55,14 @@ namespace ca    {
 
             if(e >= first)   {
                 //cout << "\n Swapping " << *first << " and " << *e << endl;
-                std::swap(*first, *e);
+                std::iter_swap(first, e);
+                return e;
             }
 
             //print_container(first, last); cout << endl;
             //cout << "\nf:" << *b << " n:" << *n << " last: " << *e << endl;
             //cout << "\nNumber of swaps: " << swap_count << endl;
+            return first;
         }
 
     template<typename RANDOM_ITR, typename UnaryPred>
@@ -86,7 +88,8 @@ namespace ca    {
                 }
                 else    {
                     //cout << "\nSwapping " << *insert_itr << " and " << *itr << endl;
-                    std::swap(*insert_itr, *itr);
+                    //std::swap(*insert_itr, *itr);
+                    std::iter_swap(insert_itr, itr);
                     //print_container(first, last);
                     //std::advance(insert_itr, 1);
                     ++insert_itr;
