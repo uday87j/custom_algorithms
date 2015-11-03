@@ -14,6 +14,12 @@ namespace ca    {
     extern void test_std_partition();
     extern void test_range_partition();
 
+    enum partition_algo_t   {
+        STD_PART    = 0,
+        PIVOT_PART,
+        PRED_PART
+    };
+
     template<typename T>
     void print_container(const T& b, const T& e, std::ostream& out = cout)  {
         std::copy(b, e, std::ostream_iterator<int>(out, " "));
