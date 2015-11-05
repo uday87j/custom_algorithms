@@ -63,6 +63,8 @@ namespace ca    {
 
     template<typename RANDOM_ITR, typename UnaryPred>
         RANDOM_ITR pred_partition(RANDOM_ITR first, RANDOM_ITR last, UnaryPred p)   {
+            if (first == last)  return first;
+
             auto insert_itr = first;
 
             while((insert_itr != last) && p(*insert_itr))  {
