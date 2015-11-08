@@ -61,6 +61,17 @@ namespace ca    {
             return first;
         }
 
+    // Input:
+    // first: Iterator to beginning of a range
+    // last : Iterator to end of the range
+    // p    : The predicate that decides which element belongs to group 1
+    // Output:
+    // The range is paritioned by the predicate so that all the input is partitioned into 2 groups
+    // Group 1 evaluates to true for predicate & Group 2 to false
+    // Return:
+    // Iterator to first memeber of Group 2 or
+    // last if all members of input evaluate to Group 1
+    // Complexity: O(n)
     template<typename RANDOM_ITR, typename UnaryPred>
         RANDOM_ITR pred_partition(RANDOM_ITR first, RANDOM_ITR last, UnaryPred p)   {
             if (first == last)  return first;
