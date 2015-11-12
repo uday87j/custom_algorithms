@@ -22,6 +22,10 @@ namespace ne    {
 
             void mark_1s_neigh(icell_t* cell);
             void mark_mid_cell(icell_t* cell);
+            void mark_unreachables(icell_t* cell);
+            void reach_2s_neigh(icell_t* cell);
+            void reach_3s_neigh(icell_t* cell);
+            void reach_4s_neigh(icell_t* cell);
 
             uint32_t m_rows;
             uint32_t m_cols;

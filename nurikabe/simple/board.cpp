@@ -66,7 +66,11 @@ namespace ne    {
     }
 
     icell_t* board_t::next() { 
-        if((++cur_itr_) != cells_.end())  return (cur_itr_)->get();
+        cout << "\nnext() called";
+        if((++cur_itr_) != cells_.end())  {
+            return (cur_itr_)->get();
+        }
+        cout << "\nReached end\n";
         return nullptr;
     }
 

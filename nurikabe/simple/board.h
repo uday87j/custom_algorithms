@@ -57,6 +57,8 @@ namespace ne {
 
     extern void set_cell_attr(icell_t& cell, uint32_t id, char colour);
 
+    class board_iterator_t;
+
     class board_t   {
         public:
             typedef std::vector<std::unique_ptr<icell_t> > icells_t;
@@ -76,10 +78,34 @@ namespace ne {
             icell_t* next();
             icell_t* end();
         private:
+            friend class board_iterator_t;
+
             uint32_t rows_;
             uint32_t cols_;
             icells_t cells_;
             icells_t::iterator cur_itr_;
+    };
+
+    class board_iterator_t  {
+        public:
+            typedef icells_t board_t::icells_t;
+
+            board_iterator_t(board_t* board = nullptr)
+            : board_(board),
+            cur_itr_(board->cells_->begin())    {}
+
+            icell_t& operator * ()  {
+                return *(cur_itr_->get());
+            }
+
+            icell_t* operator -> () {
+                return cur_itr_->get();
+            }
+
+        private:
+            board_t* board_;
+            icells_t::iterator cur_itr_;
+
     };
 
     template<typename T>
