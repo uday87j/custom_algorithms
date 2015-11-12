@@ -1,6 +1,7 @@
 #include "partition.h"
 #include "sort.h"
 #include "rank.h"
+#include "erase.h"
 
 using namespace std;
 using namespace ca;
@@ -11,8 +12,9 @@ int main()  {
     test_std_partition();
     test_range_partition();
     test_qsort();
-#endif
     test_rank();
+#endif
+    test_erase();
 
     return 0;
 }
