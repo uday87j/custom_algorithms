@@ -21,6 +21,7 @@ namespace ne    {
             void draw_board();
 
             void mark_1s_neigh(icell_t* cell);
+            void mark_mid_cell(icell_t* cell);
 
             uint32_t m_rows;
             uint32_t m_cols;

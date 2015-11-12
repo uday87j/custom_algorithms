@@ -33,7 +33,7 @@ namespace ne {
                         col_ == other.col());
             }
 
-            T id()  { return cell_.id; }
+            T id() const  { return cell_.id; }
             char colour() const   { return cell_.colour; }
             uint32_t row() const  { return row_; }
             uint32_t col() const  { return col_; }
@@ -65,6 +65,7 @@ namespace ne {
             
             void cell(uint32_t r, uint32_t c, uint32_t v);
             icell_t* cell(uint32_t r, uint32_t c) const;
+            bool is_wall(icell_t*);
             
             void draw(std::ostream& = std::cout, const std::string delim = " ");
             

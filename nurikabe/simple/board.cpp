@@ -39,6 +39,10 @@ namespace ne    {
         return cells_[r*cols_ + c].get();
     }
 
+    bool board_t::is_wall(icell_t* c)    {
+        return c->id() != numeric_limits<uint32_t>::max();
+    }
+
     void board_t::draw(ostream& ost, const std::string delim)    {
         ost << endl;
 
