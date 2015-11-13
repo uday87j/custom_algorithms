@@ -60,22 +60,15 @@ namespace ne    {
         ost << endl;
     }
 
-    icell_t* board_t::begin()  {
-        cur_itr_    = cells_.begin();
-        return cur_itr_->get();
+    board_t::iterator board_t::begin()  {
+        //cur_itr_    = cells_.begin();
+        //return cur_itr_->get();
+        return iterator(this);
     }
 
-    icell_t* board_t::next() { 
-        cout << "\nnext() called";
-        if((++cur_itr_) != cells_.end())  {
-            return (cur_itr_)->get();
-        }
-        cout << "\nReached end\n";
-        return nullptr;
-    }
-
-    icell_t* board_t::end() {
-        return nullptr;
+    board_t::iterator board_t::end() {
+        //return nullptr;
+        return iterator(this, cells_.end());
     }
 
     void set_cell_attr(icell_t& cell, uint32_t id, char colour)    {

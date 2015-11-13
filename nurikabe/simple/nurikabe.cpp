@@ -8,6 +8,7 @@ namespace ne {
         m_rows(rows),
         m_cols(cols),
         m_board(rows, cols) {
+            cout << "\nInitial";
             draw_board();
         }
 
@@ -17,25 +18,32 @@ namespace ne {
 
     void nurikabe::solve()  {
 
-        auto i  = 0;
         // 1. Mark all neighbous of '1' as Black
-        for (auto itr = m_board.begin(); itr != m_board.end(); itr = m_board.next(), ++i)    {
-            if (itr->id() == 1)   mark_1s_neigh(itr);
+        for (auto itr = m_board.begin(); itr != m_board.end(); /*itr = m_board.next()*/++itr)    {
+            if (itr->id() == 1)   mark_1s_neigh((*itr));
         }
 
-        i  = 0;
         // 2. Mark a cell in-between 2 walls as Black
-        for (auto itr = m_board.begin(); itr != m_board.end(); itr = m_board.next(), ++i)    {
-            mark_mid_cell(itr);
+        for (auto itr = m_board.begin(); itr != m_board.end(); ++itr)    {
+            mark_mid_cell((*itr));
         }
 
-        i  = 0;
-        //// 3. Mark unreachable cells as Black
-        for (auto itr = m_board.begin(); itr != m_board.end(); itr = m_board.next(), ++i)    {
-            mark_unreachables(itr);
+        // 3. Mark unreachable cells as Black
+        {
+            for (auto itr = m_board.begin(); itr != m_board.end(); ++itr)    {
+                mark_unreachables((*itr));
+            }
+            for (auto itr = m_board.begin(); itr != m_board.end(); ++itr)    {
+                if (itr->colour() == 'G')   itr->colour('B');
+            }
+            for (auto itr = m_board.begin(); itr != m_board.end(); ++itr)    {
+                if (itr->colour() == 'R')   itr->colour('G');
+            }
+            cout << "\nAfter transformation:\n";
+            draw_board();
         }
-        cout << "\nLoop count: " << i << endl;
         
+        cout << "\nfinal";
         draw_board();
     }
 
@@ -74,9 +82,12 @@ namespace ne {
         if (c->colour() == 'G') c->colour('R');
         c = right(cell, m_board);
         if (c->colour() == 'G') c->colour('R');
+        draw_board();
+        cout << "\n2s done";
     }
 
     void nurikabe::reach_3s_neigh(icell_t* cell)    {
+        reach_2s_neigh(cell);
         reach_2s_neigh(left(cell, m_board));
         reach_2s_neigh(up(cell, m_board));
         reach_2s_neigh(down(cell, m_board));
@@ -84,6 +95,7 @@ namespace ne {
     }
 
     void nurikabe::reach_4s_neigh(icell_t* cell)    {
+        reach_3s_neigh(cell);
         reach_3s_neigh(left(cell, m_board));
         reach_3s_neigh(up(cell, m_board));
         reach_3s_neigh(down(cell, m_board));
@@ -93,17 +105,23 @@ namespace ne {
     void nurikabe::mark_unreachables(icell_t* cell) {
         if (m_board.is_wall(cell))  {
             auto n  = cell->id();
-            cout << n << endl;
 
             switch(n)   {
                 case 2:
+                    cout << "\nStart 2";
                     reach_2s_neigh(cell);
+                    cout << "\n2s done";
+                    //draw_board();
                     break;
                 case 3:
+                    cout << "\nStart 3";
                     reach_3s_neigh(cell);
+                    cout << "\n3s done";
                     break;
                 case 4:
+                    cout << "\nStart 4";
                     reach_4s_neigh(cell);
+                    cout << "\n4s done";
                     break;
                 case 5:
                     break;
@@ -111,13 +129,6 @@ namespace ne {
                     break
                         ;
             }
-            draw_board();
-
-            for (auto itr = m_board.begin(); itr != m_board.end(); itr = m_board.next())    {
-                if (itr->colour() == 'G')   itr->colour('B');
-                if (itr->colour() == 'R')   itr->colour('G');
-            }
-
         }
     }
 }

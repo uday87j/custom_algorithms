@@ -5,6 +5,7 @@
 #include <cassert>
 #include <vector>
 #include <memory>
+#include <iterator>
 
 namespace ne {
 
@@ -57,8 +58,6 @@ namespace ne {
 
     extern void set_cell_attr(icell_t& cell, uint32_t id, char colour);
 
-    class board_iterator_t;
-
     class board_t   {
         public:
             typedef std::vector<std::unique_ptr<icell_t> > icells_t;
@@ -74,38 +73,70 @@ namespace ne {
             uint32_t rows() const { return rows_; }
             uint32_t cols() const { return cols_; }
 
-            icell_t* begin();
-            icell_t* next();
-            icell_t* end();
+
+            class iterator  {
+                public:
+                    typedef iterator        this_type;
+                    typedef icell_t*        value_type;
+                    typedef std::ptrdiff_t  difference_type;
+                    typedef icell_t**       pointer;
+                    typedef icell_t&        reference;
+                    typedef struct random_access_iterator_tag iterator_category;
+
+                    iterator(board_t* board = nullptr)
+                    : board_(board),
+                    cur_itr_()    {
+                        if (board)  {
+                            cur_itr_    = (board->cells_).begin();
+                        }
+                    }
+
+                    iterator(board_t* board, icells_t::iterator itr)
+                        : board_(board),
+                        cur_itr_(itr)   {}
+
+                    icell_t* operator * ()  {
+                        return cur_itr_->get();
+                    }
+
+                    icell_t* operator -> () {
+                        return cur_itr_->get();
+                    }
+
+                    this_type operator ++ ()    {
+                        this_type t = *this;
+                        ++cur_itr_;
+                        return t;
+                    }
+
+                    this_type operator ++ (int)    {
+                        ++cur_itr_;
+                        return *this;
+                    }
+
+                    bool operator == (this_type other)  {
+                        return cur_itr_ == other.cur_itr_;
+                    }
+
+                    bool operator != (this_type other)  {
+                        return cur_itr_ != other.cur_itr_;
+                    }
+
+                private:
+                    board_t* board_;
+                    icells_t::iterator cur_itr_;
+
+            };
+
+            iterator begin();
+            iterator end();
+
         private:
-            friend class board_iterator_t;
 
             uint32_t rows_;
             uint32_t cols_;
             icells_t cells_;
             icells_t::iterator cur_itr_;
-    };
-
-    class board_iterator_t  {
-        public:
-            typedef icells_t board_t::icells_t;
-
-            board_iterator_t(board_t* board = nullptr)
-            : board_(board),
-            cur_itr_(board->cells_->begin())    {}
-
-            icell_t& operator * ()  {
-                return *(cur_itr_->get());
-            }
-
-            icell_t* operator -> () {
-                return cur_itr_->get();
-            }
-
-        private:
-            board_t* board_;
-            icells_t::iterator cur_itr_;
-
     };
 
     template<typename T>
