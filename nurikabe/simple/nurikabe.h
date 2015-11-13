@@ -27,6 +27,28 @@ namespace ne    {
             void reach_3s_neigh(icell_t* cell);
             void reach_4s_neigh(icell_t* cell);
 
+            template<const size_t n>
+                void reach_neigh(icell_t* cell) {
+                    reach_neigh<n - 1>(left(cell, m_board));
+                    reach_neigh<n - 1>(up(cell, m_board));
+                    reach_neigh<n - 1>(down(cell, m_board));
+                    reach_neigh<n - 1>(right(cell, m_board));
+                }
+
+            template<>
+                void reach_neigh<0>(icell_t* cell)  {
+                    auto* c = up(cell, m_board);
+                    if (c->colour() == 'G') c->colour('R');
+                    c = down(cell, m_board);
+                    if (c->colour() == 'G') c->colour('R');
+                    c = left(cell, m_board);
+                    if (c->colour() == 'G') c->colour('R');
+                    c = right(cell, m_board);
+                    if (c->colour() == 'G') c->colour('R');
+                    draw_board();
+                    cout << "\n2s done";
+                }
+
             uint32_t m_rows;
             uint32_t m_cols;
             board_t m_board;
