@@ -9,22 +9,37 @@ namespace ne    {
     board_t::board_t(const int rows, const int cols)
         : rows_(rows),
         cols_(cols),
-        cells_(),
-        cur_itr_(cells_.begin())    {
-            auto r  = -1;
-            auto c  = 0;
-            for(auto i = 0; i < rows*cols; ++i, ++c)   {
-                if (i % cols == 0)  {
-                    ++r;
-                    c   = 0;
-                }
-                cells_.emplace_back(unique_ptr<icell_t>(new icell_t));
-                set_cell_attr(*cells_[i], numeric_limits<uint32_t>::max(), 'G');
-                cells_[i]->row(r);
-                cells_[i]->col(c);
-            }
-            cur_itr_    = cells_.begin();
+        cells_()    {
+            init(rows, cols);
         }
+
+    void board_t::init(const int rows, const int cols)    {
+        rows_   = rows;
+        cols_   = cols;
+
+        auto r  = -1;
+        auto c  = 0;
+
+        cells_.clear();
+        
+        for(auto i = 0; i < rows*cols; ++i, ++c)   {
+            if (i % cols == 0)  {
+                ++r;
+                c   = 0;
+            }
+            cells_.emplace_back(unique_ptr<icell_t>(new icell_t));
+            set_cell_attr(*cells_[i], numeric_limits<uint32_t>::max(), 'G');
+            cells_[i]->row(r);
+            cells_[i]->col(c);
+        }
+    }
+
+    void board_t::reset()   {
+
+        rows_   = 0;
+        cols_   = 0;
+        cells_.clear();
+    }
 
     void board_t::cell(uint32_t r, uint32_t c, uint32_t v)  {
         assert(r < rows_);
@@ -61,13 +76,10 @@ namespace ne    {
     }
 
     board_t::iterator board_t::begin()  {
-        //cur_itr_    = cells_.begin();
-        //return cur_itr_->get();
         return iterator(this);
     }
 
     board_t::iterator board_t::end() {
-        //return nullptr;
         return iterator(this, cells_.end());
     }
 

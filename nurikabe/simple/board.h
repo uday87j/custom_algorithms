@@ -63,6 +63,9 @@ namespace ne {
             typedef std::vector<std::unique_ptr<icell_t> > icells_t;
 
             board_t(const int rows = 0, const int cols = 0);
+
+            void init(const int rows = 0, const int cols = 0);
+            void reset();
             
             void cell(uint32_t r, uint32_t c, uint32_t v);
             icell_t* cell(uint32_t r, uint32_t c) const;
@@ -136,39 +139,50 @@ namespace ne {
             uint32_t rows_;
             uint32_t cols_;
             icells_t cells_;
-            icells_t::iterator cur_itr_;
     };
 
     template<typename T>
         point_cell_t<T>* up(point_cell_t<T>* cell, const board_t& board)    {
-            auto r  = cell->row() - 1;
-            auto c  = cell->col();
-            if(is_inside_board(board, r, c)) return board.cell(r, c);
-            else return cell;
+            if (cell != nullptr)    {
+                auto r  = cell->row() - 1;
+                auto c  = cell->col();
+                if(is_inside_board(board, r, c)) return board.cell(r, c);
+                else return nullptr;
+            }
+            else return nullptr;
         }
 
     template<typename T>
         point_cell_t<T>* down(point_cell_t<T>* cell, const board_t& board)    {
-            auto r  = cell->row() + 1;
-            auto c  = cell->col();
-            if(is_inside_board(board, r, c)) return board.cell(r, c);
-            else return cell;
+            if (cell != nullptr)    {
+                auto r  = cell->row() + 1;
+                auto c  = cell->col();
+                if(is_inside_board(board, r, c)) return board.cell(r, c);
+                else return nullptr;
+            }
+            else return nullptr;
         }
 
     template<typename T>
         point_cell_t<T>* left(point_cell_t<T>* cell, const board_t& board)    {
-            auto r  = cell->row();
-            auto c  = cell->col() - 1;
-            if(is_inside_board(board, r, c)) return board.cell(r, c);
-            else return cell;
+            if (cell != nullptr)    {
+                auto r  = cell->row();
+                auto c  = cell->col() - 1;
+                if(is_inside_board(board, r, c)) return board.cell(r, c);
+                else return nullptr;
+            }
+            else return nullptr;
         }
 
     template<typename T>
         point_cell_t<T>* right(point_cell_t<T>* cell, const board_t& board)    {
-            auto r  = cell->row();
-            auto c  = cell->col() + 1;
-            if(is_inside_board(board, r, c)) return board.cell(r, c);
-            else return cell;
+            if (cell != nullptr)    {
+                auto r  = cell->row();
+                auto c  = cell->col() + 1;
+                if(is_inside_board(board, r, c)) return board.cell(r, c);
+                else return nullptr;
+            }
+            else return nullptr;
         }
 
     extern bool is_inside_board(const board_t& board, const uint32_t r, const uint32_t c);
