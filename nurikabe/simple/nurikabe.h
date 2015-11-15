@@ -24,14 +24,14 @@ namespace ne    {
             void draw_board();
 
             // Step-wise solvers
-            void mark_1s_neigh(icell_t*);
-            void mark_mid_cell(icell_t*);
-            void mark_unreachables(icell_t*);
-            void fill_black_hole(icell_t*);// A non-wall is surrounded by 'B'
-            void fill_white_hole(icell_t*);// An incomplete wall will expand if there is only one possible way
+            void mark_1s_neigh(rcell_t*);
+            void mark_mid_cell(rcell_t*);
+            void mark_unreachables(rcell_t*);
+            void fill_black_hole(rcell_t*);// A non-wall is surrounded by 'B'
+            void fill_white_hole(rcell_t*);// An incomplete wall will expand if there is only one possible way
             
-            void reach_neigh(icell_t* cell, size_t depth = 1);
-            void reach_2s_neigh(icell_t* cell);
+            void reach_neigh(rcell_t* cell, size_t depth = 1);
+            void reach_2s_neigh(rcell_t* cell);
 
             uint32_t m_rows;
             uint32_t m_cols;

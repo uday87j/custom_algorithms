@@ -1,6 +1,8 @@
-#include "nurikabe.h"
+// This hack doesn't work
+// #include <initializer_list>
+// #undef _GLIBXX_HAVE_GETS
 
-#include <iostream>
+#include "nurikabe.h"
 
 using namespace ne;
 using namespace std;

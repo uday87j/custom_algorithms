@@ -51,16 +51,113 @@ namespace ne {
         };
 
     template <typename T>
+    struct region_cell_t;
+
+    class board_t;
+
+    class region_t  {
+        public:
+
+            typedef std::vector<region_cell_t<std::uint32_t>*> rcells_t;
+
+            enum region_type    {
+                INCOMPLETE_WALL_REGION  = 0,
+                COMPLETE_WALL_REGION,
+                WATER_REGION,
+                UNKNOWN_REGION
+            };
+
+            region_t()  = delete;
+            region_t(board_t*);
+
+            rcells_t cells() const;
+
+            size_t size() const     { return cells_.size(); }
+
+            void add_cell(region_cell_t<std::uint32_t>*);
+            //void remove_cell(rcell_t*);
+
+            region_type region();
+            void set_region(region_type);
+            void update_region(region_cell_t<std::uint32_t>*);
+
+            void merge_with_region(region_t*);
+
+            uint32_t wall_id();
+
+
+        private:
+
+            region_type region_;
+            rcells_t cells_;
+            uint32_t wall_;
+            board_t* board_;
+    };
+
+
+
+    template <typename T>
+        struct region_cell_t    {
+            region_cell_t()
+                : region_cell_t(nullptr)    {}
+
+            region_cell_t(region_t* r)
+                : region_(r)    {
+                    region_->add_cell(this);
+                }
+
+            bool operator == (const region_cell_t& other)   {
+                return point_cell_t<T>::operator =(other) &&
+                    region_ == other.region_;                    
+            }
+
+            T id() const  { return pc_.id(); }
+            char colour() const   { return pc_.colour(); }
+            uint32_t row() const  { return pc_.row(); }
+            uint32_t col() const  { return pc_.col(); }
+            cell_t<T> cell() const    { return pc_.cell(); }
+            void id(const T id)    { 
+                pc_.id(id);
+                assert(region_ != nullptr);
+                region_->update_region(this);
+            }
+            void row(uint32_t r)    { pc_.row(r); }
+            void col(uint32_t c)    { pc_.col(c); }
+            void colour(char c) {
+                pc_.colour(c);
+                assert(region_ != nullptr);
+                region_->update_region(this);
+            }
+
+            region_t* region() const  { return region_; }
+            void join_region(region_t* r)    {
+                region_ = r;
+                region_->add_cell(this);
+            }
+
+            private:
+                point_cell_t<T> pc_;
+                region_t* region_;
+        };
+
+    template <typename T>
     bool operator != (const point_cell_t<T>& a, const point_cell_t<T>& b)  { return !(a == b); }
 
+    template <typename T>
+    bool operator != (const region_cell_t<T>& a, const region_cell_t<T>& b)  { return !(a == b); }
+
     typedef point_cell_t<std::uint32_t> icell_t;
+    typedef region_cell_t<std::uint32_t> rcell_t;
 
 
-    extern void set_cell_attr(icell_t& cell, uint32_t id, char colour);
+    extern void set_cell_attr(rcell_t& cell, uint32_t id, char colour, uint32_t row, uint32_t col);
 
-    class board_t   {
+    class board_t;
+
+        class board_t   {
         public:
-            typedef std::vector<std::unique_ptr<icell_t> > icells_t;
+            typedef std::vector<std::unique_ptr<rcell_t> > rcells_t;
+            typedef std::vector<std::unique_ptr<region_t> > regions_t;
 
             board_t(const int rows = 0, const int cols = 0);
 
@@ -68,10 +165,14 @@ namespace ne {
             void reset();
             
             void cell(uint32_t r, uint32_t c, uint32_t v);
-            icell_t* cell(uint32_t r, uint32_t c) const;
-            bool is_wall(icell_t*);
+            rcell_t* cell(uint32_t r, uint32_t c) const;
+
+            bool is_wall(rcell_t*) const;
+
+            void update_regions();
+            void update_region(rcell_t*);
             
-            void draw(std::ostream& = std::cout, const std::string delim = " ");
+            void draw(std::ostream& = std::cout, const std::string delim = " ") const;
             
             uint32_t rows() const { return rows_; }
             uint32_t cols() const { return cols_; }
@@ -80,10 +181,10 @@ namespace ne {
             class iterator  {
                 public:
                     typedef iterator        this_type;
-                    typedef icell_t*        value_type;
+                    typedef rcell_t*        value_type;
                     typedef std::ptrdiff_t  difference_type;
-                    typedef icell_t**       pointer;
-                    typedef icell_t&        reference;
+                    typedef rcell_t**       pointer;
+                    typedef rcell_t&        reference;
                     typedef struct random_access_iterator_tag iterator_category;
 
                     iterator(board_t* board = nullptr)
@@ -94,15 +195,15 @@ namespace ne {
                         }
                     }
 
-                    iterator(board_t* board, icells_t::iterator itr)
+                    iterator(board_t* board, rcells_t::iterator itr)
                         : board_(board),
                         cur_itr_(itr)   {}
 
-                    icell_t* operator * ()  {
+                    rcell_t* operator * ()  {
                         return cur_itr_->get();
                     }
 
-                    icell_t* operator -> () {
+                    rcell_t* operator -> () {
                         return cur_itr_->get();
                     }
 
@@ -127,7 +228,7 @@ namespace ne {
 
                 private:
                     board_t* board_;
-                    icells_t::iterator cur_itr_;
+                    rcells_t::iterator cur_itr_;
 
             };
 
@@ -138,11 +239,12 @@ namespace ne {
 
             uint32_t rows_;
             uint32_t cols_;
-            icells_t cells_;
+            rcells_t cells_;
+            regions_t regions_;
     };
 
     template<typename T>
-        point_cell_t<T>* up(point_cell_t<T>* cell, const board_t& board)    {
+        region_cell_t<T>* up(region_cell_t<T>* cell, const board_t& board)    {
             if (cell != nullptr)    {
                 auto r  = cell->row() - 1;
                 auto c  = cell->col();
@@ -153,7 +255,7 @@ namespace ne {
         }
 
     template<typename T>
-        point_cell_t<T>* down(point_cell_t<T>* cell, const board_t& board)    {
+        region_cell_t<T>* down(region_cell_t<T>* cell, const board_t& board)    {
             if (cell != nullptr)    {
                 auto r  = cell->row() + 1;
                 auto c  = cell->col();
@@ -164,7 +266,7 @@ namespace ne {
         }
 
     template<typename T>
-        point_cell_t<T>* left(point_cell_t<T>* cell, const board_t& board)    {
+        region_cell_t<T>* left(region_cell_t<T>* cell, const board_t& board)    {
             if (cell != nullptr)    {
                 auto r  = cell->row();
                 auto c  = cell->col() - 1;
@@ -175,7 +277,7 @@ namespace ne {
         }
 
     template<typename T>
-        point_cell_t<T>* right(point_cell_t<T>* cell, const board_t& board)    {
+        region_cell_t<T>* right(region_cell_t<T>* cell, const board_t& board)    {
             if (cell != nullptr)    {
                 auto r  = cell->row();
                 auto c  = cell->col() + 1;
@@ -186,5 +288,7 @@ namespace ne {
         }
 
     extern bool is_inside_board(const board_t& board, const uint32_t r, const uint32_t c);
+
+    extern void relate_2_rcells(rcell_t* a, rcell_t* b);
 }
 #endif

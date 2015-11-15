@@ -56,9 +56,16 @@ namespace ne {
                 fill_black_hole(*itr);
             }
         }
+
+        // Update regions
+        m_board.update_regions();
         
         cout << "\nfinal";
         draw_board();
+        SWEEP_BOARD     {
+            auto r  = (*itr)->region();
+            cout << r->region() << "\t" << r->size() << endl;
+        }
     }
 
     void nurikabe::init(uint32_t rows, const uint32_t cols)  {
@@ -76,7 +83,7 @@ namespace ne {
         m_board.draw();
     }
 
-    void nurikabe::mark_1s_neigh(icell_t* cell)   {
+    void nurikabe::mark_1s_neigh(rcell_t* cell)   {
         auto c  = up(cell, m_board);
         if (c != nullptr && c != cell) c->colour('B');
 
@@ -90,7 +97,7 @@ namespace ne {
         if (c != nullptr && c != cell) c->colour('B');
     }
 
-    void nurikabe::mark_mid_cell(icell_t* cell)   {
+    void nurikabe::mark_mid_cell(rcell_t* cell)   {
         if(m_board.is_wall(cell))   {
             auto* n  = up(cell, m_board);
             if (n != nullptr)   {
@@ -119,7 +126,7 @@ namespace ne {
         }
     }
 
-    void nurikabe::reach_neigh(icell_t* cell, size_t depth)   {
+    void nurikabe::reach_neigh(rcell_t* cell, size_t depth)   {
         if (cell != nullptr)    {
             if (depth == 1) reach_2s_neigh(cell);
             else    {
@@ -132,7 +139,7 @@ namespace ne {
         }
     }
 
-    void nurikabe::reach_2s_neigh(icell_t* cell)    {
+    void nurikabe::reach_2s_neigh(rcell_t* cell)    {
         if (cell != nullptr)    {
             auto* c = up(cell, m_board);
             if (c != nullptr && c->colour() == 'G') c->colour('R');
@@ -147,7 +154,7 @@ namespace ne {
         }
     }
 
-    void nurikabe::mark_unreachables(icell_t* cell) {
+    void nurikabe::mark_unreachables(rcell_t* cell) {
         if (cell != nullptr && m_board.is_wall(cell))  {
             auto n  = cell->id();
 
@@ -177,7 +184,7 @@ namespace ne {
         }
     }
 
-    void nurikabe::fill_black_hole(icell_t* cell)   {
+    void nurikabe::fill_black_hole(rcell_t* cell)   {
         if (cell != nullptr)    {
             if (!m_board.is_wall(cell)) {
                 auto* u = up(cell, m_board);    
