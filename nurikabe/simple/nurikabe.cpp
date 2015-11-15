@@ -19,7 +19,7 @@ namespace ne {
         m_board.cell(r, c, v);
     }
 
-    void nurikabe::solve()  {
+    nurikabe::game_state_t nurikabe::solve()  {
 
         // 1. Mark all neighbous of '1' as Black
         {
@@ -57,15 +57,29 @@ namespace ne {
             }
         }
 
+        // 4. Fill White holes
+        {
+            SWEEP_BOARD {
+                fill_white_hole(*itr);
+            }
+        }
+
         // Update regions
         m_board.update_regions();
+
+        //Print regions
+        // SWEEP_BOARD     {
+        //     auto r  = (*itr)->region();
+        //     cout << r->region() << "\t" << r->size() << endl;
+        // }
+
+        auto state = check_for_validity();
+        cout << "\nGame state: ";   print_state(state);
         
-        cout << "\nfinal";
+        cout << "\nEnd of solve():";
         draw_board();
-        SWEEP_BOARD     {
-            auto r  = (*itr)->region();
-            cout << r->region() << "\t" << r->size() << endl;
-        }
+
+        return state;
     }
 
     void nurikabe::init(uint32_t rows, const uint32_t cols)  {
@@ -81,6 +95,18 @@ namespace ne {
 
     void nurikabe::draw_board() {
         m_board.draw();
+    }
+
+    void nurikabe::print_state(game_state_t s)  {
+        if (s == SOLVED)    cout << "SOLVED";
+        if (s == POOL_EXISTS)    cout << "POOL_EXISTS";
+        if (s == INCOMPLETE)    cout << "INCOMPLETE";
+        if (s == INCOMPLETE_WALLS)    cout << "INCOMPLETE_WALLS";
+        if (s == UNREACHABLE_WATER)    cout << "UNREACHABLE_WATER";
+        if (s == OVERLAPPING_ISLANDS)    cout << "OVERLAPPING_ISLANDS";
+        if (s == NO_ERROR_YET)    cout << "NO_ERROR_YET";
+        if (s == UNKNOWN)    cout << "UNKNOWN";
+        cout << endl;
     }
 
     void nurikabe::mark_1s_neigh(rcell_t* cell)   {
@@ -127,7 +153,7 @@ namespace ne {
     }
 
     void nurikabe::reach_neigh(rcell_t* cell, size_t depth)   {
-        if (cell != nullptr)    {
+        if ((cell != nullptr) && (cell->region()->region() != region_t::COMPLETE_WALL_REGION))    {
             if (depth == 1) reach_2s_neigh(cell);
             else    {
                 reach_neigh(cell, depth-1);
@@ -140,7 +166,7 @@ namespace ne {
     }
 
     void nurikabe::reach_2s_neigh(rcell_t* cell)    {
-        if (cell != nullptr)    {
+        if ((cell != nullptr) && (cell->region()->region() != region_t::COMPLETE_WALL_REGION))    {
             auto* c = up(cell, m_board);
             if (c != nullptr && c->colour() == 'G') c->colour('R');
             c = down(cell, m_board);
@@ -155,32 +181,10 @@ namespace ne {
     }
 
     void nurikabe::mark_unreachables(rcell_t* cell) {
-        if (cell != nullptr && m_board.is_wall(cell))  {
+        if ((cell != nullptr) && m_board.is_wall(cell) &&
+                (cell->region()->region() != region_t::COMPLETE_WALL_REGION))  {
             auto n  = cell->id();
-
-            switch(n)   {
-                case 2:
-                    //cout << "\nStart 2";
-                    reach_neigh(cell, 1);
-                    //cout << "\n2s done";
-                    //draw_board();
-                    break;
-                case 3:
-                    //cout << "\nStart 3";
-                    reach_neigh(cell, 2);
-                    //cout << "\n3s done";
-                    break;
-                case 4:
-                    //cout << "\nStart 4";
-                    reach_neigh(cell, 3);
-                    //cout << "\n4s done";
-                    break;
-                case 5:
-                    break;
-                default:
-                    break
-                        ;
-            }
+            reach_neigh(cell, n-1);
         }
     }
 
@@ -203,5 +207,127 @@ namespace ne {
                 }
             }
         }
+    }
+
+    void nurikabe::fill_white_hole(rcell_t* cell)   {
+        if (cell != nullptr)    {
+            if (cell->region()->region() == region_t::INCOMPLETE_WALL_REGION)   {
+                auto greys  = 0;
+                rcell_t* gc = nullptr;
+
+                auto u = up(cell, m_board);
+                if ((u != nullptr) && (u->colour() == 'G'))   {
+                    ++greys  ;
+                    gc = u;
+                };
+
+                auto d = down(cell, m_board);
+                if ((d != nullptr) && (d->colour() == 'G'))   {
+                    ++greys  ;
+                    gc = d;
+                };
+
+                auto r = right(cell, m_board);
+                if ((r != nullptr) && (r->colour() == 'G'))   {
+                    ++greys  ;
+                    gc = r;
+                };
+
+                auto l = left(cell, m_board);
+                if ((l != nullptr) && (l->colour() == 'G'))   {
+                    ++greys  ;
+                    gc = l;
+                };
+
+                if (1 == greys) {
+                    gc->colour('W');                        
+                }
+            }
+        }
+    }
+
+    void nurikabe::assume_and_build_wall()  {
+        // Let us strat with '2'
+        SWEEP_BOARD {
+            if (((*itr)->id() == 2) && ((*itr)->region()->region() == region_t::INCOMPLETE_WALLS))  {
+                auto u  = up(*itr, m_board);
+                if ((u != nullptr) && (u->colour() == 'G')) {
+                    u->colour('W'); // Assume this cell to be our Wall
+                    if (ANY_ERROR == check_for_validity())  {
+                        u->colour('G');
+                        //TODO: Backtrack!
+                    }
+                }
+            }
+        }
+    }
+
+    nurikabe::game_state_t nurikabe::check_for_validity() {
+        if (does_pool_exist())  {
+            return POOL_EXISTS;
+        }
+
+        if (any_overlapping_walls())    {
+            return OVERLAPPING_ISLANDS;
+        }
+
+        if (!game_completed())  {
+            return INCOMPLETE;                
+        }
+
+        return NO_ERROR_YET;
+    }
+
+    bool nurikabe::does_pool_exist() {
+        auto regs   = m_board.regions();
+        for (auto reg : regs) {
+            if ((reg->region() == region_t::WATER_REGION) && (reg->size() >= 4))    {
+                auto cells = reg->cells();
+                //for (auto c : cells)    {
+                //    cout << c->colour() << "\t" << endl;
+                //}
+                for (auto c : cells)    {
+                    assert(c->colour() == 'B');
+
+                    auto r  = right(c, m_board);
+                    if ((r == nullptr) || (reg != r->region()))   break;
+
+                    assert(r->colour() == 'B');
+                    auto d  = down(c, m_board);
+
+                    if ((d == nullptr) || (reg != d->region()))   break;
+                    assert(d->colour() == 'B');
+                    
+                    auto rd = down(r, m_board);
+                    if ((rd != nullptr) && (reg == rd->region())) {
+                        assert(rd->colour() == 'B');
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    bool nurikabe::any_overlapping_walls()  {
+        SWEEP_BOARD     {
+            if (itr->colour() == 'W')   {
+                auto r  = right(*itr, m_board);
+                if (r->colour() == 'W') return true;
+
+                auto d  = down(*itr, m_board);
+                if (d->colour() == 'W') return true;
+            }
+        }
+        return false;
+    }
+
+    bool nurikabe::game_completed() {
+        SWEEP_BOARD     {
+            if (itr->colour() == 'G')   {
+                return false;
+            }
+        }
+        return true;
     }
 }

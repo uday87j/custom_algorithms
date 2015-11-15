@@ -152,12 +152,11 @@ namespace ne {
 
     extern void set_cell_attr(rcell_t& cell, uint32_t id, char colour, uint32_t row, uint32_t col);
 
-    class board_t;
-
-        class board_t   {
+    class board_t   {
         public:
             typedef std::vector<std::unique_ptr<rcell_t> > rcells_t;
             typedef std::vector<std::unique_ptr<region_t> > regions_t;
+            typedef std::vector<region_t*> regions_ptr_t;
 
             board_t(const int rows = 0, const int cols = 0);
 
@@ -169,13 +168,16 @@ namespace ne {
 
             bool is_wall(rcell_t*) const;
 
-            void update_regions();
-            void update_region(rcell_t*);
             
             void draw(std::ostream& = std::cout, const std::string delim = " ") const;
             
             uint32_t rows() const { return rows_; }
             uint32_t cols() const { return cols_; }
+
+            void update_regions();
+            void update_region(rcell_t*);
+
+            regions_ptr_t   regions();
 
 
             class iterator  {

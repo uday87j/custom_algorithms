@@ -128,7 +128,6 @@ namespace ne    {
             regions_.emplace_back(unique_ptr<region_t>(new region_t(this)));
             
             cells_.emplace_back(unique_ptr<rcell_t>(new rcell_t(regions_[i].get())));
-            //regions_[i].get()->add_cell(cells_[i].get());
             set_cell_attr(*cells_[i], numeric_limits<uint32_t>::max(), 'G', r, c);
         }
     }
@@ -178,6 +177,14 @@ namespace ne    {
             auto c  = cells_[i].get();
             update_region(c);
         }
+    }
+
+    board_t::regions_ptr_t board_t::regions()  {
+        regions_ptr_t ret(rows_*cols_);
+        for(auto i = 0; i < cells_.size(); ++i) {
+            ret[i]  = regions_[i].get();
+        }
+        return ret;
     }
 
     void board_t::draw(ostream& ost, const std::string delim) const    {
