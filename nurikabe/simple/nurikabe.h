@@ -20,6 +20,7 @@ namespace ne    {
                 UNREACHABLE_WATER,
                 OVERLAPPING_ISLANDS,
                 NO_ERROR_YET,
+                CANT_PROCEED,
                 UNKNOWN
             };
 
@@ -34,6 +35,8 @@ namespace ne    {
         private:
 
             void draw_board();
+
+            board_t& cur_board();
 
             // Step-wise solvers
             void mark_1s_neigh(rcell_t*);
@@ -59,7 +62,8 @@ namespace ne    {
 
             uint32_t m_rows;
             uint32_t m_cols;
-            board_t m_board;
+            std::vector<board_t> m_boards;
+            uint32_t m_cur_board;
     };
 
 }

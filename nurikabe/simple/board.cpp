@@ -12,6 +12,33 @@ namespace ne    {
         wall_(0),
         board_(bptr)    {}
 
+    region_t::region_t(const region_t& r)  {
+        region_ = r. region_;
+        cells_.reserve(r.cells_.size());
+        std::copy(begin(r.cells_), end(r.cells_), begin(cells_)); //Only pointer (shallow) copy
+        wall_   = r.wall_;
+        board_  = r.board_;
+    }
+    
+    region_t& region_t::operator = (const region_t& r) {
+        region_ = r. region_;
+        cells_.reserve(max(r.cells_.size(), cells_.size()));
+        std::copy(begin(r.cells_), end(r.cells_), begin(cells_)); //Only pointer (shallow) copy
+        wall_   = r.wall_;
+        board_  = r.board_;
+        return *this;
+    }
+
+    void region_t::set_board(board_t* b)  {
+        if (b != nullptr)   board_ = b;
+    }
+
+    void region_t::set_cell_ptr(region_cell_t<std::uint32_t>* rc, uint32_t index) {
+        if ((index < cells_.size()) && (rc != nullptr))  {
+            cells_[index]   = rc;
+        }
+    }
+
     region_t::rcells_t region_t::cells() const { return cells_; }
 
     void region_t::add_cell(rcell_t* c) {
@@ -110,6 +137,41 @@ namespace ne    {
             init(rows, cols);
         }
 
+    board_t::board_t(const board_t& b)
+        : rows_(b.rows_),
+        cols_(b.cols_),
+        cells_(),
+        regions_()  {
+            (*this) = b;
+        }
+
+    board_t& board_t::operator = (const board_t& b) {
+        rows_ = b.rows_;
+        cols_ = b.cols_;
+        init(rows_, cols_);
+        for(auto i = 0; i < rows_*cols_; ++i)   {
+            *(cells_[i])  = *(b.cells_[i]);   //Deep copy
+            *(regions_[i])= *(b.regions_[i]);
+        }
+        for(auto i = 0; i < rows_*cols_; ++i)   {
+            regions_[i]->set_board(this);
+            auto ref_regions    = b.regions();
+            for (auto j = 0; j < regions_[j]->size(); ++j)    {
+                //Point my regions to cells in my board
+                //Read the indeces of those cells from "b"
+                auto ref_cells  = ref_regions[i]->cells();
+                auto r  = ref_cells[i]->row();
+                auto c  = ref_cells[i]->col();
+                auto* cell  = this->cell(r, c);
+                regions_[i]->set_cell_ptr(cell, j); 
+                //Point the cells to their newly assigned region
+                cell->set_region(regions_[i].get());
+            }
+        }
+
+        return *this;
+    }
+
     void board_t::init(const int rows, const int cols)    {
         rows_   = rows;
         cols_   = cols;
@@ -118,6 +180,7 @@ namespace ne    {
         auto c  = 0;
 
         cells_.clear();
+        regions_.clear();
         
         for(auto i = 0; i < rows*cols; ++i, ++c)   {
             if (i % cols == 0)  {
@@ -179,7 +242,7 @@ namespace ne    {
         }
     }
 
-    board_t::regions_ptr_t board_t::regions()  {
+    board_t::regions_ptr_t board_t::regions() const  {
         regions_ptr_t ret(rows_*cols_);
         for(auto i = 0; i < cells_.size(); ++i) {
             ret[i]  = regions_[i].get();

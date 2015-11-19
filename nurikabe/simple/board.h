@@ -69,10 +69,15 @@ namespace ne {
 
             region_t()  = delete;
             region_t(board_t*);
+            region_t(const region_t&);
+            region_t& operator = (const region_t&);
 
             rcells_t cells() const;
 
             size_t size() const     { return cells_.size(); }
+
+            void set_board(board_t* b);
+            void set_cell_ptr(region_cell_t<std::uint32_t>* rc, uint32_t index);
 
             void add_cell(region_cell_t<std::uint32_t>*);
             //void remove_cell(rcell_t*);
@@ -106,6 +111,19 @@ namespace ne {
                     region_->add_cell(this);
                 }
 
+            region_cell_t(const region_cell_t& rc)  {
+                pc_     = rc.pc_;
+                assert(rc.region_ != nullptr);
+                region_ = rc.region_;
+            }
+
+            region_cell_t& operator = (const region_cell_t& rc)  {
+                pc_     = rc.pc_;
+                assert(rc.region_ != nullptr);
+                region_ = rc.region_;
+                return *this;
+            }
+
             bool operator == (const region_cell_t& other)   {
                 return point_cell_t<T>::operator =(other) &&
                     region_ == other.region_;                    
@@ -130,6 +148,9 @@ namespace ne {
             }
 
             region_t* region() const  { return region_; }
+            void set_region(region_t* r)    {
+                if (r != nullptr)   region_ = r;
+            }
             void join_region(region_t* r)    {
                 region_ = r;
                 region_->add_cell(this);
@@ -159,6 +180,8 @@ namespace ne {
             typedef std::vector<region_t*> regions_ptr_t;
 
             board_t(const int rows = 0, const int cols = 0);
+            board_t(const board_t&);
+            board_t& operator = (const board_t&);
 
             void init(const int rows = 0, const int cols = 0);
             void reset();
@@ -177,7 +200,7 @@ namespace ne {
             void update_regions();
             void update_region(rcell_t*);
 
-            regions_ptr_t   regions();
+            regions_ptr_t   regions() const;
 
 
             class iterator  {
