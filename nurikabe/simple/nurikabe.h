@@ -57,6 +57,7 @@ namespace ne    {
             bool game_completed();
             bool does_pool_exist();
             bool any_overlapping_walls();
+            bool any_unreachable_water();
 
             void print_state(game_state_t);
 

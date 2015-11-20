@@ -95,7 +95,8 @@ namespace ne    {
                 }
             }
             else if (region_ == INCOMPLETE_WALL_REGION)   {
-                assert(board_->is_wall(c));
+                assert((board_->is_wall(c)) ||
+                        (c->colour() == 'G')); //Happens in backtracking
                 if (cells_.size() == wall_)    {
                     region_ = COMPLETE_WALL_REGION;
                 }
@@ -146,22 +147,30 @@ namespace ne    {
         }
 
     board_t& board_t::operator = (const board_t& b) {
+        
+        // Resize our board
         rows_ = b.rows_;
         cols_ = b.cols_;
         init(rows_, cols_);
+
         for(auto i = 0; i < rows_*cols_; ++i)   {
             *(cells_[i])  = *(b.cells_[i]);   //Deep copy
             *(regions_[i])= *(b.regions_[i]);
         }
+        // Our board's cells & regions now point to "b"'s cells & regions
+        
+        // Let's change those pointers to point into our cells & regions
+        //cout << "\nNum regions: " << b.regions().size() << endl;
         for(auto i = 0; i < rows_*cols_; ++i)   {
             regions_[i]->set_board(this);
             auto ref_regions    = b.regions();
             for (auto j = 0; j < regions_[j]->size(); ++j)    {
+                //cout << "\nNum cells in this region: " << regions_[j]->size() << endl;
                 //Point my regions to cells in my board
                 //Read the indeces of those cells from "b"
                 auto ref_cells  = ref_regions[i]->cells();
-                auto r  = ref_cells[i]->row();
-                auto c  = ref_cells[i]->col();
+                auto r  = ref_cells[j]->row();
+                auto c  = ref_cells[j]->col();
                 auto* cell  = this->cell(r, c);
                 regions_[i]->set_cell_ptr(cell, j); 
                 //Point the cells to their newly assigned region

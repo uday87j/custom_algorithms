@@ -80,8 +80,18 @@ namespace ne {
         auto state = check_for_validity();
         cout << "\nGame state: ";   print_state(state);
         
-        cout << "\nEnd of solve():";
+        cout << "\nEnd of solve() iteration:";
         draw_board();
+
+        if (NO_ERROR_YET != state)  {
+            assume_and_build_wall();
+        }
+        
+        //cout << "\nTest cloning board():";
+        //++m_cur_board;
+        //CUR_BOARD = m_boards[m_cur_board - 1];
+        //assert(CUR_BOARD == m_boards[m_cur_board - 1]);   //TODO: Define board_t::==
+        //draw_board();
 
         return state;
     }
@@ -258,21 +268,29 @@ namespace ne {
     }
 
     void nurikabe::assume_and_build_wall()  {
-        // Clone our current board
-       m_boards[m_cur_board + 1]   = m_boards[m_cur_board];  //TODO: Uncomment
-        ++m_cur_board;
+        auto i = 0;
         // Let us strat with '2'
         SWEEP_BOARD {
+            assert(*itr != nullptr);
             if (((*itr)->id() == 2) && ((*itr)->region()->region() == region_t::INCOMPLETE_WALL_REGION))  {
                 auto u  = up(*itr, CUR_BOARD);
                 if ((u != nullptr) && (u->colour() == 'G')) {
+                    
+                    // Clone our current board
+                    m_boards[m_cur_board + 1]   = m_boards[m_cur_board];
+                    ++m_cur_board;
+                    
+                    cout << "\nWill assume & set this cell to W: (" << u->row() << ", " << u->col() << ")\n";
                     u->colour('W'); // Assume this cell to be our Wall
+                    
                     if (NO_ERROR_YET != check_for_validity())  {
                         u->colour('G');
-                        //TODO: Backtrack!
+                        //CUR_BOARD.reset();
+                        --m_cur_board;  //Backtrack
                     }
                 }
             }
+            ++i;
         }
     }
 
@@ -283,6 +301,10 @@ namespace ne {
 
         if (any_overlapping_walls())    {
             return OVERLAPPING_ISLANDS;
+        }
+
+        if (any_unreachable_water())    {
+            return UNREACHABLE_WATER;
         }
 
         if (!game_completed())  {
@@ -327,10 +349,10 @@ namespace ne {
         SWEEP_BOARD     {
             if (itr->colour() == 'W')   {
                 auto r  = right(*itr, CUR_BOARD);
-                if (r->colour() == 'W') return true;
+                if (r != nullptr && r->colour() == 'W') return true;
 
                 auto d  = down(*itr, CUR_BOARD);
-                if (d->colour() == 'W') return true;
+                if (d != nullptr && d->colour() == 'W') return true;
             }
         }
         return false;
@@ -343,5 +365,23 @@ namespace ne {
             }
         }
         return true;
+    }
+
+    bool nurikabe::any_unreachable_water()  {
+        SWEEP_BOARD     {
+            auto u  = up(*itr, CUR_BOARD);
+            auto d  = down(*itr, CUR_BOARD);
+            auto r  = right(*itr, CUR_BOARD);
+            auto l  = left(*itr, CUR_BOARD);
+
+            if (((u != nullptr) && (u->colour() == 'W')) &&
+                        ((d != nullptr) && (d->colour() == 'W')) &&
+                        ((l != nullptr) && (l->colour() == 'W')) &&
+                        ((r != nullptr) && (r->colour() == 'W')))   {
+                return true;
+            }
+        }
+        return false;
+
     }
 }
