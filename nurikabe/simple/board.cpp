@@ -47,8 +47,15 @@ namespace ne    {
                     region_ == COMPLETE_WALL_REGION)    {
 
                 assert(board_->is_wall(c));
+                wall_   = min(wall_, c->id());
+                assert(wall_ != numeric_limits<uint32_t>::max());
+                //if (c->id() != numeric_limits<uint32_t>::max())   {
+                //    if (wall_ != numeric_limits<uint32_t>::max()) {
+                //        wall_   = c->id();
+                //    }
+                //}
                 cells_.push_back(c);
-                assert(cells_.size() > wall_);
+                assert(cells_.size() >= wall_);
                 if (cells_.size() == wall_)    {
                     region_ = COMPLETE_WALL_REGION;
                 }
@@ -125,8 +132,9 @@ namespace ne    {
     uint32_t region_t::wall_id()    { return wall_; }
 
     void region_t::merge_with_region(region_t* r)   {
-        for(auto c : r->cells())    {
+        for(auto& c : r->cells())    {
             c->join_region(this) ;
+            assert(this == c->region());
         }
     }
 
@@ -161,20 +169,26 @@ namespace ne    {
         
         // Let's change those pointers to point into our cells & regions
         //cout << "\nNum regions: " << b.regions().size() << endl;
+        //TODO: Revisit: something wrong here!
+        auto ref_regions    = b.regions();
+        assert(ref_regions.size() == rows_*cols_);
         for(auto i = 0; i < rows_*cols_; ++i)   {
             regions_[i]->set_board(this);
-            auto ref_regions    = b.regions();
-            for (auto j = 0; j < regions_[j]->size(); ++j)    {
-                //cout << "\nNum cells in this region: " << regions_[j]->size() << endl;
-                //Point my regions to cells in my board
-                //Read the indeces of those cells from "b"
+
+            if (ref_regions[i]->region() != region_t::INVALID_REGION)   {
                 auto ref_cells  = ref_regions[i]->cells();
-                auto r  = ref_cells[j]->row();
-                auto c  = ref_cells[j]->col();
-                auto* cell  = this->cell(r, c);
-                regions_[i]->set_cell_ptr(cell, j); 
-                //Point the cells to their newly assigned region
-                cell->set_region(regions_[i].get());
+                for (auto j = 0; j < ref_regions[i]->size(); ++j)    {
+                    //cout << "\nNum cells in this region: " << regions_[j]->size() << endl;
+                    //Point my regions to cells in my board
+                    //Read the indeces of those cells from "b"
+                    auto r  = ref_cells[j]->row();
+                    auto c  = ref_cells[j]->col();
+                    auto cell  = this->cell(r, c);
+                    //assert(cell->region() == ref_regions[i]);
+                    regions_[i]->set_cell_ptr(cell, j); 
+                    //Point the cells to their newly assigned region
+                    cell->set_region(regions_[i].get());
+                }
             }
         }
 
@@ -215,7 +229,10 @@ namespace ne    {
         assert(r < rows_);
         assert(c < cols_);
         assert(v < cells_.size());
-        cells_[r*cols_ + c]->id(v);
+        if (v != numeric_limits<uint32_t>::max())   {
+            cells_[r*cols_ + c]->id(v);
+            cells_[r*cols_ + c]->colour('W');
+        }
     }
 
     rcell_t* board_t::cell(uint32_t r, uint32_t c) const  {
@@ -231,17 +248,19 @@ namespace ne    {
     }
 
     void board_t::update_region(rcell_t* c)   {
-        auto u  = up(c, *this);
-        relate_2_rcells(c, u);
+        if (c->region()->region() != region_t::INVALID_REGION)  {
+            auto u  = up(c, *this);
+            relate_2_rcells(c, u);
 
-        u  = down(c, *this);
-        relate_2_rcells(c, u);
+            u  = down(c, *this);
+            relate_2_rcells(c, u);
 
-        u  = left(c, *this);
-        relate_2_rcells(c, u);
+            u  = left(c, *this);
+            relate_2_rcells(c, u);
 
-        u  = right(c, *this);
-        relate_2_rcells(c, u);
+            u  = right(c, *this);
+            relate_2_rcells(c, u);
+        }
     }
 
     void board_t::update_regions()  {

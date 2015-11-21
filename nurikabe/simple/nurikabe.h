@@ -44,7 +44,7 @@ namespace ne    {
             void mark_unreachables(rcell_t*);
             void fill_black_hole(rcell_t*);// A non-wall is surrounded by 'B'
             void fill_white_hole(rcell_t*);// An incomplete wall will expand if there is only one possible way
-            void assume_and_build_wall();
+            bool assume_and_build_wall();
             
 
             // Helper functions for accessiblity
@@ -52,6 +52,7 @@ namespace ne    {
             void reach_2s_neigh(rcell_t* cell);
 
             game_state_t check_for_validity();
+            game_state_t game_solved();
 
             // Helper checkers
             bool game_completed();

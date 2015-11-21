@@ -64,7 +64,8 @@ namespace ne {
                 INCOMPLETE_WALL_REGION  = 0,
                 COMPLETE_WALL_REGION,
                 WATER_REGION,
-                UNKNOWN_REGION
+                UNKNOWN_REGION,
+                INVALID_REGION
             };
 
             region_t()  = delete;
@@ -138,13 +139,16 @@ namespace ne {
                 pc_.id(id);
                 assert(region_ != nullptr);
                 region_->update_region(this);
+                //this->colour('W');    //Unless you leak max() logic here :-(
             }
             void row(uint32_t r)    { pc_.row(r); }
             void col(uint32_t c)    { pc_.col(c); }
             void colour(char c) {
-                pc_.colour(c);
-                assert(region_ != nullptr);
-                region_->update_region(this);
+                if (c != pc_.colour())  {
+                    pc_.colour(c);
+                    assert(region_ != nullptr);
+                    region_->update_region(this);
+                }
             }
 
             region_t* region() const  { return region_; }
@@ -152,6 +156,7 @@ namespace ne {
                 if (r != nullptr)   region_ = r;
             }
             void join_region(region_t* r)    {
+                region_->set_region(region_t::INVALID_REGION);
                 region_ = r;
                 region_->add_cell(this);
             }

@@ -78,15 +78,23 @@ namespace ne {
         // }
 
         auto state = check_for_validity();
-        cout << "\nGame state: ";   print_state(state);
-        
-        cout << "\nEnd of solve() iteration:";
-        draw_board();
+        cout << "\nGame state after apply fill rules: ";   print_state(state);
+        assert(state == NO_ERROR_YET);
 
-        if (NO_ERROR_YET != state)  {
-            assume_and_build_wall();
+        if (!game_completed())  {
+            auto new_wall = assume_and_build_wall();
+            cout << "\nAfter the assumption: ";
+            
+            cout << "\nEnd of solve() iteration:";
+            draw_board();
+
+            if (new_wall)   {
+                cout << "\nCalling solve() recursively: ";
+                solve();
+            }
+            //draw_board();
         }
-        
+
         //cout << "\nTest cloning board():";
         //++m_cur_board;
         //CUR_BOARD = m_boards[m_cur_board - 1];
@@ -202,11 +210,34 @@ namespace ne {
     }
 
     void nurikabe::mark_unreachables(rcell_t* cell) {
+        // Mark cells reachable by numbered walls
         if ((cell != nullptr) && CUR_BOARD.is_wall(cell) &&
                 (cell->region()->region() != region_t::COMPLETE_WALL_REGION))  {
             auto n  = cell->id();
             reach_neigh(cell, n-1);
         }
+
+        // Remove cells that care adjacent to complete walls
+        if ((cell != nullptr) && CUR_BOARD.is_wall(cell) &&
+            (cell->region()->region() == region_t::COMPLETE_WALL_REGION))   {
+                auto* u = up(cell, CUR_BOARD);    
+                auto* d = down(cell, CUR_BOARD);
+                auto* l = left(cell, CUR_BOARD);
+                auto* r = right(cell, CUR_BOARD);
+
+                if ((u != nullptr) && (u->colour() == 'R')) {
+                    u->colour('G'); // Revert to unreachable
+                }
+                if ((d != nullptr) && (d->colour() == 'R')) {
+                    d->colour('G'); // Revert to unreachable
+                }
+                if ((l != nullptr) && (l->colour() == 'R')) {
+                    l->colour('G'); // Revert to unreachable
+                }
+                if ((r != nullptr) && (r->colour() == 'R')) {
+                    r->colour('G'); // Revert to unreachable
+                }
+            }
     }
 
     void nurikabe::fill_black_hole(rcell_t* cell)   {
@@ -267,33 +298,63 @@ namespace ne {
         }
     }
 
-    void nurikabe::assume_and_build_wall()  {
+    bool nurikabe::assume_and_build_wall()  {
         auto i = 0;
+        bool built_new_wall = false;
         // Let us strat with '2'
         SWEEP_BOARD {
             assert(*itr != nullptr);
+            //TODO: Add assumptions for all numbers 3, 4, 5 etc
             if (((*itr)->id() == 2) && ((*itr)->region()->region() == region_t::INCOMPLETE_WALL_REGION))  {
                 auto u  = up(*itr, CUR_BOARD);
+                //TODO: Add down, L & R
                 if ((u != nullptr) && (u->colour() == 'G')) {
                     
                     // Clone our current board
                     m_boards[m_cur_board + 1]   = m_boards[m_cur_board];
                     ++m_cur_board;
                     
-                    cout << "\nWill assume & set this cell to W: (" << u->row() << ", " << u->col() << ")\n";
-                    u->colour('W'); // Assume this cell to be our Wall
+                    auto r  = u->row();
+                    auto c  = u->col();
+
+                    cout << "\nWill assume & set this cell to W: (" << r << ", " << c << ")\n";
+                    CUR_BOARD.cell(r, c)->colour('W'); // Assume this cell to be our Wall
+                    CUR_BOARD.update_region(CUR_BOARD.cell(r, c));
+                    auto new_cell   = CUR_BOARD.cell(r, c);
+                    assert(new_cell->region()->region() == region_t::COMPLETE_WALL_REGION);
+                    assert(down(new_cell, CUR_BOARD)->region()->region() == region_t::COMPLETE_WALL_REGION);
+                    assert(new_cell->region() == down(new_cell, CUR_BOARD)->region());
                     
-                    if (NO_ERROR_YET != check_for_validity())  {
+                    auto result_state   = check_for_validity();
+                    if (NO_ERROR_YET != result_state)  {
+                        cout << "Undoing the move becuase :";
+                        print_state(result_state);
                         u->colour('G');
                         //CUR_BOARD.reset();
                         --m_cur_board;  //Backtrack
+                    }
+                    else {
+                        cout << "Valid move becuase :";
+                        print_state(result_state);
+                        built_new_wall  = true;
+                        //draw_board();
+                        break;
                     }
                 }
             }
             ++i;
         }
+        return built_new_wall;
     }
 
+    nurikabe::game_state_t nurikabe::game_solved() {
+
+        if (!game_completed())  {
+            return INCOMPLETE;                
+        }
+
+        return check_for_validity();
+    }
     nurikabe::game_state_t nurikabe::check_for_validity() {
         if (does_pool_exist())  {
             return POOL_EXISTS;
@@ -305,10 +366,6 @@ namespace ne {
 
         if (any_unreachable_water())    {
             return UNREACHABLE_WATER;
-        }
-
-        if (!game_completed())  {
-            return INCOMPLETE;                
         }
 
         return NO_ERROR_YET;
@@ -349,10 +406,16 @@ namespace ne {
         SWEEP_BOARD     {
             if (itr->colour() == 'W')   {
                 auto r  = right(*itr, CUR_BOARD);
-                if (r != nullptr && r->colour() == 'W') return true;
+                //if (r != nullptr && r->colour() == 'W') return true;
+                if (r != nullptr && CUR_BOARD.is_wall(r) && (r->region() != r->region()))   {
+                    return true;    // 2 different regions are wallls & adjacent                    
+                }
 
                 auto d  = down(*itr, CUR_BOARD);
-                if (d != nullptr && d->colour() == 'W') return true;
+                //if (d != nullptr && d->colour() == 'W') return true;
+                if (d != nullptr && CUR_BOARD.is_wall(d) && (itr->region() != d->region()))   {
+                    return true;    // 2 different regions are wallls & adjacent                    
+                }
             }
         }
         return false;
