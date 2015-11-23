@@ -35,18 +35,18 @@ int main()  {
         solver.reset();
     }
 
-    {
-        cout << "\nPuzzle 2\n";
+    //{
+    //    cout << "\nPuzzle 2\n";
 
-        nurikabe solver(5, 5);
-        //solver.init(5, 5);
+    //    nurikabe solver(5, 5);
+    //    //solver.init(5, 5);
 
-        puzzle_2(solver);
-        
-        solver.solve();
-        
-        solver.reset();
-    }
+    //    puzzle_2(solver);
+    //    
+    //    solver.solve();
+    //    
+    //    solver.reset();
+    //}
 
     return 0;
 }

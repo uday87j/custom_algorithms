@@ -22,7 +22,8 @@ namespace ne    {
     
     region_t& region_t::operator = (const region_t& r) {
         region_ = r. region_;
-        cells_.reserve(max(r.cells_.size(), cells_.size()));
+        //cells_.reserve(max(r.cells_.size(), cells_.size()));
+        cells_.resize(max(r.cells_.size(), cells_.size()));
         std::copy(begin(r.cells_), end(r.cells_), begin(cells_)); //Only pointer (shallow) copy
         wall_   = r.wall_;
         board_  = r.board_;
@@ -55,7 +56,7 @@ namespace ne    {
                 //    }
                 //}
                 cells_.push_back(c);
-                assert(cells_.size() >= wall_);
+                //assert(cells_.size() >= wall_);   //TODO: Required?
                 if (cells_.size() == wall_)    {
                     region_ = COMPLETE_WALL_REGION;
                 }
@@ -177,6 +178,7 @@ namespace ne    {
 
             if (ref_regions[i]->region() != region_t::INVALID_REGION)   {
                 auto ref_cells  = ref_regions[i]->cells();
+                assert(regions_[i]->size() == ref_cells.size());
                 for (auto j = 0; j < ref_regions[i]->size(); ++j)    {
                     //cout << "\nNum cells in this region: " << regions_[j]->size() << endl;
                     //Point my regions to cells in my board
@@ -189,6 +191,9 @@ namespace ne    {
                     //Point the cells to their newly assigned region
                     cell->set_region(regions_[i].get());
                 }
+            }
+            else    {
+                assert(ref_regions[i]->region() == region_t::INVALID_REGION);
             }
         }
 
