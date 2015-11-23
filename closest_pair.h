@@ -27,6 +27,11 @@ namespace ca    {
             os << "(" << x << ", " << y << ")";
             return os;
         }
+
+        std::ostream& fprint(std::ostream& os) const   {
+            os << x << " " << y;
+            return os;
+        }
         
         T x;
         T y;
@@ -34,7 +39,12 @@ namespace ca    {
 
     template <typename T>
         std::ostream& operator << (std::ostream& os, const point_t<T>& p)    {
-            p.print(os);
+            if (os == std::cout)    {
+                p.print(os);
+            }
+            else    {
+                p.fprint(os);
+            }
             return os;
         }
 

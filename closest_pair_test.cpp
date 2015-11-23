@@ -3,6 +3,7 @@
 
 #include <array>
 #include <iostream>
+#include <fstream>
 #include <utility>
 #include <vector>
 #include <random>
@@ -60,5 +61,8 @@ namespace ca    {
         cout << "\nSort on p.y:\n";  print_sequence_container(fpoints);
 
         cout << endl;
+
+        ofstream ofile("cp.dat");
+        print_sequence_container(ipoints, "\n", ofile);
     }
 }

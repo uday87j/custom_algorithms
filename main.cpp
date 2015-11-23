@@ -16,6 +16,7 @@ int main()  {
     test_rank();
     test_erase();
 #endif
+    test_cp_methods();
     test_closest_pair();
 
     return 0;
