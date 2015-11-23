@@ -62,7 +62,10 @@ namespace ca    {
 
         cout << endl;
 
-        ofstream ofile("cp.dat");
-        print_sequence_container(ipoints, "\n", ofile);
+        ofstream of1("ci.dat");
+        print_sequence_container(ipoints, "\n", of1);
+
+        ofstream of2("cf.dat");
+        print_sequence_container(fpoints, "\n", of2);
     }
 }
