@@ -14,6 +14,7 @@ using std::int32_t;
 namespace ca    {
 
     extern void test_closest_pair();
+    extern void test_cp_methods();
 
     // 'T' should have well define '<' operator
     template <typename T>
@@ -51,38 +52,43 @@ namespace ca    {
     typedef point_t<float> fpoint_t;
     typedef point_t<double> dpoint_t;
 
-    struct gen_fpoint_t  {
+    // DISTRIBUTION = uniform_real_distribution or uniform_int_distribution
+    template <typename T = int32_t, typename DISTRIBUTION = std::uniform_int_distribution<> >
+    struct gen_point_t  {
 
-        gen_fpoint_t(float minf = 0.0, float maxf = 1.0)
+        gen_point_t(const T minf = T(), const T maxf = T())
             : gen(rd()),
             dis(minf, maxf) {}
 
-        gen_fpoint_t(const gen_fpoint_t& g) {
-            std::uniform_real_distribution<>::param_type p(g.dis.a(), g.dis.b());
+        gen_point_t(const gen_point_t& g) {
+            typename DISTRIBUTION::param_type p(g.dis.a(), g.dis.b());
             dis.param(p);                
         }
 
-        void swap(gen_fpoint_t& g) {
-            std::uniform_real_distribution<>::param_type pg(g.dis.a(), g.dis.b());
-            std::uniform_real_distribution<>::param_type pm(dis.a(), dis.b());
+        void swap(gen_point_t& g) {
+            typename DISTRIBUTION::param_type pg(g.dis.a(), g.dis.b());
+            typename DISTRIBUTION::param_type pm(dis.a(), dis.b());
             dis.param(pg);
             g.dis.param(pm);
         }
 
-        gen_fpoint_t& operator = (const gen_fpoint_t& g)    {
+        gen_point_t& operator = (const gen_point_t& g)    {
             auto t  = g;
             swap(t);
             return *this;
         }
 
-        fpoint_t operator ()  ()    {
-            return fpoint_t(dis(gen), dis(gen));
+        point_t<T> operator ()  ()    {
+            return point_t<T>(dis(gen), dis(gen));
         }
 
         std::random_device rd;
         std::mt19937 gen;
-        std::uniform_real_distribution<> dis;
+        DISTRIBUTION dis;
     };
+
+    typedef gen_point_t<float, std::uniform_real_distribution<> > gen_fpoint_t;
+    typedef gen_point_t<> gen_ipoint_t;
 }
 
 #endif
