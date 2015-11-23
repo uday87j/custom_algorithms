@@ -2,6 +2,7 @@
 #include "sort.h"
 #include "rank.h"
 #include "erase.h"
+#include "closest_pair.h"
 
 using namespace std;
 using namespace ca;
@@ -13,8 +14,9 @@ int main()  {
     test_range_partition();
     test_qsort();
     test_rank();
-#endif
     test_erase();
+#endif
+    test_closest_pair();
 
     return 0;
 }
