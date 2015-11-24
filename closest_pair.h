@@ -8,6 +8,8 @@
 #include <vector>
 #include <random>
 #include <algorithm>
+#include <iterator>
+#include <cmath>
 
 using std::int32_t;
 
@@ -99,6 +101,153 @@ namespace ca    {
 
     typedef gen_point_t<float, std::uniform_real_distribution<> > gen_fpoint_t;
     typedef gen_point_t<> gen_ipoint_t;
+
+    template <typename T>
+        struct pair_points_t    {
+            pair_points_t(const point_t<T>& a = point_t<T>(), const point_t<T>& b = point_t<T>())
+                : p1(a),
+                p2(b)   {}
+
+            std::ostream& print(std::ostream& os) const   {
+                os << "(" << p1 << "), (" << p2 << ")";
+                return os;
+            }
+
+            std::ostream& fprint(std::ostream& os) const   {
+                os << "(" << p1 << "), (" << p2 << ")"; // TODO:Format according to gnuplot
+                return os;
+            }
+
+            point_t<T> p1;
+            point_t<T> p2;
+        };
+
+    template <typename T>
+        std::ostream& operator << (std::ostream& os, const pair_points_t<T>& p)    {
+            if (os == std::cout)    {
+                p.print(os);
+            }
+            else    {
+                p.fprint(os);
+            }
+            return os;
+        }
+
+    template <typename T = int32_t, typename RET = float>
+        RET distance(const point_t<T>& p1, const point_t<T>& p2)  {
+            RET d = std::sqrt(std::pow(p2.y - p1.y, 2) + std::pow(p2.x - p1.x, 2));                
+            return d;
+        }
+
+    template <typename T>
+        pair_points_t<T> closest_pair(const std::vector<point_t<T> >& points)   {
+            // Base cases
+            if (points.empty()) {
+                return pair_points_t<T>();
+            }
+            else if (points.size() == 1) {
+                return pair_points_t<T>(points[0], point_t<T>());
+            }
+            else if (points.size() == 2)    {
+                return pair_points_t<T>(points[0], points[1]);
+            }
+
+            // All points are on same x co-ordinate
+            bool all_pts_same_x = true;
+            for (auto i = 1; i < points.size(); ++i)    {
+                if (points[i].x != points[0].x) {
+                    all_pts_same_x = false;
+                    break;
+                }
+            }
+
+            auto points_y    = points;
+            std::sort(begin(points_y), end(points_y), &y_less_than<T>);
+            
+            pair_points_t<T> cp;
+
+            if (all_pts_same_x) {
+                auto dmin_y = distance(points_y[0], points_y[1]);
+                for (auto i = 1; i < points_y.size() - 1; ++i)  {
+                    auto d = distance(points_y[i], points_y[i+1]);
+                    if (d < dmin_y) {
+                        cp.p1   = points_y[i];
+                        cp.p2   = points_y[i+1];
+                    }
+                }
+                return cp;
+            }
+            
+
+            // Other cases
+            auto points_x    = points;
+            std::sort(begin(points_x), end(points_x), &x_less_than<T>);
+
+            auto x_mid   = ((points_x.front().x + points_x.back().x) / 2);
+
+            std::cout << "\nInput sorted on x: \n";    print_sequence_container(points_x);
+            std::cout << "\nx_mid: " << x_mid << std::endl;
+
+            // Partition into Left
+            decltype(points_x) points_x_1;
+            std::copy_if(begin(points_x), end(points_x), std::back_inserter(points_x_1),
+                    [x_mid](const point_t<T>& a)    {
+                        return a.x <= x_mid;
+                    });
+            std::cout << "\n points_x_1: \n";    print_sequence_container(points_x_1);
+
+            // Partition into Right
+            decltype(points_x) points_x_2;
+            std::copy_if(begin(points_x), end(points_x), std::back_inserter(points_x_2),
+                    [x_mid](const point_t<T>& a)    {
+                        return a.x > x_mid;
+                    });
+            std::cout << "\n points_x_2: \n";    print_sequence_container(points_x_2);
+
+            auto cp_left    = closest_pair(points_x_1);
+            auto cp_right   = closest_pair(points_x_2);
+
+            auto dmin_left  = distance(cp_left.p1, cp_left.p2);
+            auto dmin_right = distance(cp_right.p1, cp_right.p2);
+            auto dmin       = std::min(dmin_left, dmin_right);
+
+            if (dmin_left < dmin_right) {
+                cp  = cp_left;
+            }
+            else    {
+                cp  = cp_right;
+            }
+
+            //TODO: Optimize Split pair
+            decltype(points_x) points_x_1_dmin;
+            std::copy_if(begin(points_x_1), end(points_x_1), std::back_inserter(points_x_1_dmin),
+                    [dmin](const point_t<T>& a)    {
+                        return a.x <= dmin;
+                    });
+            decltype(points_x) points_x_2_dmin;
+            std::copy_if(begin(points_x_2), end(points_x_2), std::back_inserter(points_x_2_dmin),
+                    [dmin](const point_t<T>& a)    {
+                        return a.x > dmin;
+                    });
+            // Hack
+            if (points_x_2_dmin.empty())    {
+                std::cout << "\nA case where points_x_2_dmin is empty!\n";
+                points_x_2_dmin.push_back(point_t<T>());
+            }
+
+            for (auto& pl : points_x_1_dmin) {
+                for (auto& pr : points_x_2_dmin)    {
+                    auto d_split    = distance(pl, pr);
+                    if (d_split < dmin) {
+                        dmin    = d_split;
+                        cp.p1   = pl;
+                        cp.p2   = pr;
+                    }
+                }
+            }
+            
+            return cp;
+        }
 }
 
 #endif

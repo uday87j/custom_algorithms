@@ -8,6 +8,7 @@
 #include <vector>
 #include <random>
 #include <algorithm>
+#include <cassert>
 
 #define IP_BEG  begin(ipoints)
 #define IP_END  end(ipoints)
@@ -18,7 +19,20 @@ using namespace std;
 
 namespace ca    {    
 
-    void test_closest_pair()    {}
+    void test_closest_pair()    {
+        // Create a vector of co-ordinates
+        std::vector<ipoint_t> ipoints(10, {0, 0});
+        gen_ipoint_t igen(0, 10);
+        std::generate(IP_BEG, IP_END, igen);
+        cout << "\nint points:\n";  print_sequence_container(ipoints);
+        ofstream of1("ci.dat");
+        print_sequence_container(ipoints, "\n", of1);
+
+        // Invoke closest_pair() to return co-ordinates of 2 closest points
+        auto cp     = closest_pair(ipoints);
+        cout << "\nThe closest pair: " << cp << endl;
+        cout << "\nDistance between them: " << distance(cp.p1, cp.p2) << endl;
+    }
 
     void test_cp_methods()    {
 
@@ -67,5 +81,11 @@ namespace ca    {
 
         ofstream of2("cf.dat");
         print_sequence_container(fpoints, "\n", of2);
+
+        // Test distance
+        assert(ipoints.size() > 1);
+        auto dist   = distance(ipoint_t(8, 1), ipoint_t(9, 9));
+        cout << "\nDistance between (8, 1) & (9, 9): " << dist << endl;
+        //assert(dist == 8.06226);
     }
 }
