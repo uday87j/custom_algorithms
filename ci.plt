@@ -3,4 +3,6 @@ set output "ci.svg"
 set title "A simple plot of random integer co-ordinates"
 set xlabel "x"
 set ylabel "y"
-plot "./cp.dat" using 1:2 title ""
+set xrange [0:]
+set yrange [0:]
+plot "./ci.dat" using 1:2 title ""

@@ -22,7 +22,7 @@ namespace ca    {
     void test_closest_pair()    {
         // Create a vector of co-ordinates
         std::vector<ipoint_t> ipoints(10, {0, 0});
-        gen_ipoint_t igen(0, 10);
+        gen_ipoint_t igen(0, 50, 5);
         std::generate(IP_BEG, IP_END, igen);
         cout << "\nint points:\n";  print_sequence_container(ipoints);
         ofstream of1("ci.dat");

@@ -73,9 +73,18 @@ namespace ca    {
     template <typename T = int32_t, typename DISTRIBUTION = std::uniform_int_distribution<>, bool unique = false>
     struct gen_point_t  {
 
-        gen_point_t(const T minf = T(), const T maxf = T())
-            : gen(rd()),
-            dis(minf, maxf) {}
+        gen_point_t(const T minf = T(), const T maxf = T(), std::uint32_t step = 100)
+            : gen(/*rd()*/),
+            dis(minf, maxf),
+            vec_(step),
+            start_step_(step)  {
+                for (auto i = 0; i < start_step_; ++i)   {
+                    dis(gen);   // While away these pseudo-random numbers
+                    //auto p  = point_t<T>(dis(gen), dis(gen));
+                    //std::cout << "\nGenerating a point: " << p << std::endl;
+                    //vec_.push_back(p);
+                }
+            }
 
         gen_point_t(const gen_point_t& g) {
             typename DISTRIBUTION::param_type p(g.dis.a(), g.dis.b());
@@ -97,6 +106,7 @@ namespace ca    {
 
         point_t<T> operator ()  ()    {
             auto p  = point_t<T>(dis(gen), dis(gen));
+            //std::cout << "\nGenerating a point: " << p << std::endl;
             if (unique) {
                 //std::cout << "\nI'm unique";
                 for (auto& a : vec_)    {
@@ -115,6 +125,7 @@ namespace ca    {
         std::mt19937 gen;
         DISTRIBUTION dis;
         std::vector<point_t<T> > vec_;
+        std::uint32_t start_step_;
     };
 
     typedef gen_point_t<float, std::uniform_real_distribution<> > gen_fpoint_t;
@@ -240,19 +251,24 @@ namespace ca    {
             //TODO: Optimize Split pair
             decltype(points_x) points_x_1_dmin;
             std::copy_if(begin(points_x_1), end(points_x_1), std::back_inserter(points_x_1_dmin),
-                    [dmin](const point_t<T>& a)    {
-                        return a.x <= dmin;
+                    [&](const point_t<T>& a)    {
+                        //return a.x <= dmin;
+                        assert((x_mid - a.x) >= 0);
+                        return (x_mid - a.x) <= dmin;
                     });
+            std::cout << "\n points_x_1_dmin: \n";    print_sequence_container(points_x_1_dmin);
             decltype(points_x) points_x_2_dmin;
             std::copy_if(begin(points_x_2), end(points_x_2), std::back_inserter(points_x_2_dmin),
-                    [dmin](const point_t<T>& a)    {
-                        return a.x > dmin;
+                    [&](const point_t<T>& a)    {
+                        assert((a.x - x_mid) >= 0);
+                        return (a.x - x_mid) <= dmin;
                     });
+            std::cout << "\n points_x_2_dmin: \n";    print_sequence_container(points_x_2_dmin);
             // Hack
-            if (points_x_2_dmin.empty())    {
-                std::cout << "\nA case where points_x_2_dmin is empty!\n";
-                points_x_2_dmin.push_back(point_t<T>());
-            }
+            //if (points_x_2_dmin.empty())    {
+            //    std::cout << "\nA case where points_x_2_dmin is empty!\n";
+            //    points_x_2_dmin.push_back(point_t<T>());
+            //}
 
             for (auto& pl : points_x_1_dmin) {
                 for (auto& pr : points_x_2_dmin)    {
