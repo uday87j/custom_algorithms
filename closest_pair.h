@@ -143,7 +143,8 @@ namespace ca    {
             }
 
             std::ostream& fprint(std::ostream& os) const   {
-                os << "(" << p1 << "), (" << p2 << ")"; // TODO:Format according to gnuplot
+                //os << "(" << p1 << "), (" << p2 << ")"; // TODO:Format according to gnuplot
+                os << p1 << std::endl << p2;
                 return os;
             }
 
@@ -248,7 +249,6 @@ namespace ca    {
                 cp  = cp_right;
             }
 
-            //TODO: Optimize Split pair
             decltype(points_x) points_x_1_dmin;
             std::copy_if(begin(points_x_1), end(points_x_1), std::back_inserter(points_x_1_dmin),
                     [&](const point_t<T>& a)    {
@@ -264,20 +264,36 @@ namespace ca    {
                         return (a.x - x_mid) <= dmin;
                     });
             std::cout << "\n points_x_2_dmin: \n";    print_sequence_container(points_x_2_dmin);
-            // Hack
-            //if (points_x_2_dmin.empty())    {
-            //    std::cout << "\nA case where points_x_2_dmin is empty!\n";
-            //    points_x_2_dmin.push_back(point_t<T>());
-            //}
 
-            for (auto& pl : points_x_1_dmin) {
+            //TODO: Optimize Split pair
+            //for (auto& pl : points_x_1_dmin) {
+            //    for (auto& pr : points_x_2_dmin)    {
+            //        auto d_split    = distance(pl, pr);
+            //        if (d_split < dmin) {
+            //            std::cout << "\nSplit pair is closer: " << pair_points_t<T>(pl, pr) << std::endl;;
+            //            dmin    = d_split;
+            //            cp.p1   = pl;
+            //            cp.p2   = pr;
+            //        }
+            //    }
+            //}
+            
+            // Optimized version
+            std::sort(begin(points_x_2_dmin), end(points_x_2_dmin), &y_less_than<T>);
+            for (auto& pl : points_x_1_dmin)    {
+                auto pair_count = 0;
                 for (auto& pr : points_x_2_dmin)    {
-                    auto d_split    = distance(pl, pr);
-                    if (d_split < dmin) {
-                        std::cout << "\nSplit pair is closer: " << pair_points_t<T>(pl, pr) << std::endl;;
-                        dmin    = d_split;
-                        cp.p1   = pl;
-                        cp.p2   = pr;
+                    if ((pr.y - pl.y) <= dmin)    {
+                        ++pair_count;
+                        if (pair_count == 6)    {   // These many points are enough to consider ClosestPair in 2D (Fact)
+                            break;
+                        }
+                        auto dmin_pair  = distance(pl, pr);
+                        if (dmin_pair < dmin)   {
+                            dmin = dmin_pair;
+                            cp.p1 = pl;
+                            cp.p2 = pr;
+                        }
                     }
                 }
             }

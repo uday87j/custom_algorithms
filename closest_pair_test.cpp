@@ -21,8 +21,8 @@ namespace ca    {
 
     void test_closest_pair()    {
         // Create a vector of co-ordinates
-        std::vector<ipoint_t> ipoints(10, {0, 0});
-        gen_ipoint_t igen(0, 50, 5);
+        std::vector<ipoint_t> ipoints(50, {0, 0});
+        gen_ipoint_t igen(0, 200, 5);
         std::generate(IP_BEG, IP_END, igen);
         cout << "\nint points:\n";  print_sequence_container(ipoints);
         ofstream of1("ci.dat");
@@ -32,6 +32,8 @@ namespace ca    {
         auto cp     = closest_pair(ipoints);
         cout << "\nThe closest pair: " << cp << endl;
         cout << "\nDistance between them: " << distance(cp.p1, cp.p2) << endl;
+        ofstream of2("cp_ci.dat");
+        of2 << cp;
     }
 
     void test_cp_methods()    {
