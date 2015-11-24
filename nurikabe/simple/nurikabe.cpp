@@ -139,7 +139,7 @@ namespace ne {
                     //built_new_wall  = true;
                     //draw_board();
                     walls_built_.emplace_back(wall_info_t(
-                                wall_built->row(), wall_built->col(), direction, true));
+                                wall_built->row(), wall_built->col(), new_dir, true));
                     break;
                 }
             }
@@ -166,6 +166,7 @@ namespace ne {
         auto latest_wall            = walls_built_.back();
         auto latest_wall_direction  = latest_wall.direction;
         auto latest_wall_id         = CUR_USER_BOARD.cell(latest_wall.row, latest_wall.col)->region()->wall_id();
+        std::cout << "\nUnbuilding wall at: " << latest_wall.row << ", " << latest_wall.col << " whose direction was: " << latest_wall_direction << endl;
 
         if (latest_wall_id != game_->smallest_incomplete_wall_id_)  {
             assert(latest_wall_id < game_->smallest_incomplete_wall_id_);
@@ -292,15 +293,25 @@ namespace ne {
         bool request_build_new_wall = true;
 
         while (smallest_incomplete_wall_id_ != 5)   {
-            cerr << "\nTry & build a new wall";
+            cerr << "\nTry & build a new wall\n";
             wb_.build_next_wall(request_build_new_wall);
             draw_board();
 
             cerr << "\nRunning fill rules:\n";
             state   = run_fill_rules();
             print_state(state);
+
+            CUR_BOARD.update_regions();
+            state   = check_for_validity();
+            draw_board();   cout << endl;
+            // //Print regions
+            // SWEEP_BOARD     {
+            //     auto r  = (*itr)->region();
+            //     cout << r->region() << "\t" << r->size() << endl;
+            // }
+
             if (state == NO_ERROR_YET)  {
-                cerr << "\nWall successfully built:";
+                cerr << "\nWall successfully built:\n";
                 draw_board();
                 request_build_new_wall  = true;
                 //solve();
