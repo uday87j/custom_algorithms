@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <iterator>
 #include <cmath>
+#include <cassert>
 
 using std::int32_t;
 
@@ -24,6 +25,10 @@ namespace ca    {
         point_t(T px = T(), T py = T())
             : x(px),
             y(py)   {}
+
+        bool operator == (const point_t& p) {
+            return (x == p.x) && (y == p.y);
+        }
 
         std::ostream& print(std::ostream& os) const   {
             os << "(" << x << ", " << y << ")";
@@ -65,7 +70,7 @@ namespace ca    {
     typedef point_t<double> dpoint_t;
 
     // DISTRIBUTION = uniform_real_distribution or uniform_int_distribution
-    template <typename T = int32_t, typename DISTRIBUTION = std::uniform_int_distribution<> >
+    template <typename T = int32_t, typename DISTRIBUTION = std::uniform_int_distribution<>, bool unique = false>
     struct gen_point_t  {
 
         gen_point_t(const T minf = T(), const T maxf = T())
@@ -91,16 +96,29 @@ namespace ca    {
         }
 
         point_t<T> operator ()  ()    {
-            return point_t<T>(dis(gen), dis(gen));
+            auto p  = point_t<T>(dis(gen), dis(gen));
+            if (unique) {
+                //std::cout << "\nI'm unique";
+                for (auto& a : vec_)    {
+                    if (a == p) {
+                        return this->operator()();
+                    }
+                }
+            }
+
+            vec_.push_back(p);
+            
+            return vec_.back();
         }
 
         std::random_device rd;
         std::mt19937 gen;
         DISTRIBUTION dis;
+        std::vector<point_t<T> > vec_;
     };
 
     typedef gen_point_t<float, std::uniform_real_distribution<> > gen_fpoint_t;
-    typedef gen_point_t<> gen_ipoint_t;
+    typedef gen_point_t<int32_t,std::uniform_int_distribution<>, true> gen_ipoint_t;
 
     template <typename T>
         struct pair_points_t    {
@@ -143,6 +161,7 @@ namespace ca    {
         pair_points_t<T> closest_pair(const std::vector<point_t<T> >& points)   {
             // Base cases
             if (points.empty()) {
+                assert(0);
                 return pair_points_t<T>();
             }
             else if (points.size() == 1) {
@@ -164,7 +183,7 @@ namespace ca    {
             auto points_y    = points;
             std::sort(begin(points_y), end(points_y), &y_less_than<T>);
             
-            pair_points_t<T> cp;
+            pair_points_t<T> cp(points_y[0], points_y[1]);
 
             if (all_pts_same_x) {
                 auto dmin_y = distance(points_y[0], points_y[1]);
@@ -239,6 +258,7 @@ namespace ca    {
                 for (auto& pr : points_x_2_dmin)    {
                     auto d_split    = distance(pl, pr);
                     if (d_split < dmin) {
+                        std::cout << "\nSplit pair is closer: " << pair_points_t<T>(pl, pr) << std::endl;;
                         dmin    = d_split;
                         cp.p1   = pl;
                         cp.p2   = pr;
