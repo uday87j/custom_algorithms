@@ -32,6 +32,7 @@ namespace ne    {
             char next_direction(const char);
             nurikabe* game_;
             std::vector<wall_info_t> walls_built_;
+            std::vector<std::vector<std::pair<uint32_t, uint32_t> > > unbuildable_cells_;   // Managed 1 vector per board
             uint32_t highest_wall_id_;
     };
 
@@ -44,6 +45,7 @@ namespace ne    {
                 INCOMPLETE,
                 INCOMPLETE_WALLS,
                 UNREACHABLE_WATER,
+                DISCONNECTED_WATER,
                 OVERLAPPING_ISLANDS,
                 NO_ERROR_YET,
                 CANT_PROCEED,
@@ -91,6 +93,9 @@ namespace ne    {
             bool does_pool_exist();
             bool any_overlapping_walls();
             bool any_unreachable_water();
+            bool any_disconnected_water();
+            bool any_incomplete_walls();
+            bool any_incomplete_walls_of_id(uint32_t w_id);
 
             void print_state(game_state_t);
             game_state_t solve_old();   //Remove this later

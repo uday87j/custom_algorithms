@@ -90,6 +90,10 @@ namespace ne {
             void merge_with_region(region_t*);
 
             uint32_t wall_id();
+            void set_wall_id(uint32_t w_id);
+
+            bool is_wall()  { return (region_ == COMPLETE_WALL_REGION) ||
+                (region_ == INCOMPLETE_WALL_REGION);    }
 
 
         private:

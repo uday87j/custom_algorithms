@@ -49,6 +49,7 @@ namespace ne    {
 
                 assert(board_->is_wall(c));
                 wall_   = min(wall_, c->id());
+                wall_   = min(wall_, c->region()->wall_id());
                 assert(wall_ != numeric_limits<uint32_t>::max());
                 //if (c->id() != numeric_limits<uint32_t>::max())   {
                 //    if (wall_ != numeric_limits<uint32_t>::max()) {
@@ -131,8 +132,21 @@ namespace ne    {
     void region_t::set_region(region_type r)    { region_ = r; }
 
     uint32_t region_t::wall_id()    { return wall_; }
+    void region_t::set_wall_id(uint32_t w_id)   { wall_ = w_id; }
 
     void region_t::merge_with_region(region_t* r)   {
+        assert(r != nullptr);
+        if (r->region() == COMPLETE_WALL_REGION ||
+                this->region() == COMPLETE_WALL_REGION)    {
+            return; //Can't merge into complete wallls            
+        }
+        if (this->is_wall() &&
+                r->is_wall())  {
+            if (this->wall_ != r->wall_)    {
+                return; //Don't merge 2 independent walls
+            }
+        }
+        //TODO: Add if() for not merging independent wall w/ same wall_
         for(auto& c : r->cells())    {
             c->join_region(this) ;
             assert(this == c->region());
@@ -291,10 +305,14 @@ namespace ne    {
             if(i % rows_ == 0)   ost << endl;
             
             auto num    = cells_[i]->id();
-            if (num == numeric_limits<uint32_t>::max())
-                ost << cells_[i]->colour() << delim;
-            else
-                ost << cells_[i]->id() << delim;
+            if (num == numeric_limits<uint32_t>::max()) {
+                ost << cells_[i]->colour() << delim << delim;
+            }
+            else    {
+                //ost << cells_[i]->colour() << "(";
+                //ost << cells_[i]->id() << ")" << delim << delim;
+                ost << cells_[i]->id() << delim << delim;
+            }
         }
 
         ost << endl;
