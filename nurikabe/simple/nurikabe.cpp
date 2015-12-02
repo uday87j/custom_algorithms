@@ -737,7 +737,7 @@ namespace ne {
             return UNREACHABLE_WATER;
         }
 
-        if (any_disconnected_water())    {  //TODO: Continue here
+        if (any_disconnected_water())    {
             return DISCONNECTED_WATER;
         }
 
@@ -822,6 +822,12 @@ namespace ne {
     }
 
     bool nurikabe::any_disconnected_water()  {
+        SWEEP_BOARD     {
+            if (itr->colour() == 'G')   {
+                return false;   // The game is incomplete, can't determine disconnected water status
+            }
+        }
+
         region_t* reg   = nullptr;
         auto regs   = CUR_BOARD.regions();
         for (auto r : regs) {
@@ -846,11 +852,14 @@ namespace ne {
             auto r  = right(*itr, CUR_BOARD);
             auto l  = left(*itr, CUR_BOARD);
 
-            if (((u == nullptr) || (u->colour() == 'W')) &&
-                        ((d == nullptr) || (d->colour() == 'W')) &&
-                        ((l == nullptr) || (l->colour() == 'W')) &&
-                        ((r == nullptr) || (r->colour() == 'W')))   {
-                return true;
+            if (itr->colour() == 'B')   {
+                if (((u == nullptr) || (u->colour() == 'W')) &&
+                            ((d == nullptr) || (d->colour() == 'W')) &&
+                            ((l == nullptr) || (l->colour() == 'W')) &&
+                            ((r == nullptr) || (r->colour() == 'W')))   {
+                    cout << "\nUnreachable water at (" << itr->row() << ", " << itr->col() << ")\n";
+                    return true;
+                }
             }
         }
         return false;
