@@ -3,6 +3,8 @@
 #include <limits>
 #include <algorithm>
 
+#define DEBUG(...) ;
+
 using namespace std;
 
 namespace ne    {
@@ -110,6 +112,11 @@ namespace ne    {
                     region_ = COMPLETE_WALL_REGION;
                 }
             }
+            else if (region_ == WATER_REGION)   {
+                if (c->colour() == 'W') {
+                    region_ = INCOMPLETE_WALL_REGION;
+                }
+            }
                 //TODO:Any more cases? 
         }
     }
@@ -183,7 +190,7 @@ namespace ne    {
         // Our board's cells & regions now point to "b"'s cells & regions
         
         // Let's change those pointers to point into our cells & regions
-        //cout << "\nNum regions: " << b.regions().size() << endl;
+        //DEBUG("\nNum regions: " << b.regions().size() << endl);
         //TODO: Revisit: something wrong here!
         auto ref_regions    = b.regions();
         assert(ref_regions.size() == rows_*cols_);
@@ -194,7 +201,7 @@ namespace ne    {
                 auto ref_cells  = ref_regions[i]->cells();
                 assert(regions_[i]->size() == ref_cells.size());
                 for (auto j = 0; j < ref_regions[i]->size(); ++j)    {
-                    //cout << "\nNum cells in this region: " << regions_[j]->size() << endl;
+                    //DEBUG("\nNum cells in this region: " << regions_[j]->size() << endl);
                     //Point my regions to cells in my board
                     //Read the indeces of those cells from "b"
                     auto r  = ref_cells[j]->row();

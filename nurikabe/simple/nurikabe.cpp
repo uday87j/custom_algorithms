@@ -11,6 +11,10 @@ using namespace std;
 #define SWEEP_BOARD for (auto itr = CUR_BOARD.begin(); itr != CUR_BOARD.end(); ++itr)
 #define SWEEP_USER_BOARD for (auto itr = CUR_USER_BOARD.begin(); itr != CUR_USER_BOARD.end(); ++itr)
 #define UNBUILDABLE_WALL unbuildable_cells_[game_->m_cur_board]
+#define DEBUG(...) 
+//#define DEBUG(...) cout << __VA_ARGS__;
+#define DRAW(...)
+//#define DRAW(...) __VA_ARGS__;
 
 namespace ne {
 
@@ -51,18 +55,22 @@ namespace ne {
             if (((*itr)->region()->wall_id() == wall_id) && ((*itr)->region()->region() == region_t::INCOMPLETE_WALL_REGION))  {
                 auto u  = f(*itr, direction);
 
-                if ((u != nullptr) && (u->colour() == 'G')) {
+                if ((u != nullptr) && (u->colour() != 'W')) {
+                //if ((u != nullptr) && (u->colour() == 'G')) {
+                // if (u != nullptr) {
+                    assert(u->colour() != 'W');
+
                     auto r  = u->row();
                     auto c  = u->col();
 
                     auto cell   = CUR_USER_BOARD.cell(r, c);
 
                     if (cell->colour() == 'W') {
-                        cout << "\nThis cell is already a wall: (" << r << ", " << c << ")\n";
+                        DEBUG("\nThis cell is already a wall: (" << r << ", " << c << ")\n");
                     }
                     else if (find(begin(UNBUILDABLE_WALL), end(UNBUILDABLE_WALL), 
                                 make_pair(cell->row(), cell->col())) != end(UNBUILDABLE_WALL)) {
-                        cout << "\nA wall can't be built here: (" << r << ", " << c << ")\n";
+                        DEBUG("\nA wall can't be built here: (" << r << ", " << c << ")\n");
                     }
                     else    {
                         
@@ -71,13 +79,13 @@ namespace ne {
                         game_->m_boards[game_->m_cur_board + 1]   = game_->m_boards[game_->m_cur_board];
                         ++game_->m_cur_board;
                         cell   = CUR_USER_BOARD.cell(r, c);
-                        cout << "\nIncrement board: " << game_->m_cur_board << endl;
+                        DEBUG("\nIncrement board: " << game_->m_cur_board << endl);
 
-                        cout << "\nWill assume & set this cell to W: (" << r << ", " << c << ")\n";
+                        DEBUG("\nWill assume & set this cell to W: (" << r << ", " << c << ")\n");
 
                         cell->colour('W'); // Assume this cell to be our Wall
-                        cout << "\nSetting cell to W: (" << r << "," << c << ")\n";
-                        game_->draw_board();
+                        DEBUG("\nSetting cell to W: (" << r << "," << c << ")\n");
+                        DRAW(game_->draw_board());
                         cell->region()->set_wall_id(itr->region()->wall_id());
                         CUR_USER_BOARD.update_region(cell);
 
@@ -98,8 +106,8 @@ namespace ne {
 
         while (new_dir != ' ')  {   // ' ' means exhausted all directions for current cell
 
-            cerr << "\nWall id: " << game_->smallest_incomplete_wall_id_ << endl;
-            cerr << "\nTrying new direction: " << new_dir << endl;
+            DEBUG("\nWall id: " << game_->smallest_incomplete_wall_id_ << endl);
+            DEBUG("\nTrying new direction: " << new_dir << endl);
             wall_built = build_single_wall(game_->smallest_incomplete_wall_id_, new_dir);
 
             auto result_state   = nurikabe::UNKNOWN;
@@ -107,21 +115,21 @@ namespace ne {
                 result_state   = game_->check_for_validity();
                 if (nurikabe::NO_ERROR_YET != result_state)  {
 
-                    cout << "Undoing the move becuase :";
+                    DEBUG("Undoing the move becuase :");
                     game_->print_state(result_state);
                     
                     UNBUILDABLE_WALL.push_back(make_pair(wall_built->row(), wall_built->col()));
 
                     --game_->m_cur_board;  //Backtrack
-                    cout << "\nDecrement board: " << game_->m_cur_board << endl;
+                    DEBUG("\nDecrement board: " << game_->m_cur_board << endl);
                     
                     new_dir     = next_direction(new_dir);  //Try in a different direction
                 }
                 else {
-                    cout << "Valid move becuase :";
+                    DEBUG("Valid move becuase :");
                     game_->print_state(result_state);
                     
-                    //draw_board();
+                    DRAW(game_->draw_board());
                     
                     walls_built_.emplace_back(wall_info_t(
                                 wall_built->row(), wall_built->col(), new_dir, true));
@@ -152,8 +160,8 @@ namespace ne {
 
             // TODO: Get rid of this check here
             if (game_->smallest_incomplete_wall_id_ > highest_wall_id_)    {
-                cerr << "\nExit build_next_wall() as smallest_incomplete_wall_id_ > highest_wall_id_\n";
-                cerr << endl << game_->smallest_incomplete_wall_id_ << " > " << highest_wall_id_ << endl;
+                DEBUG("\nExit build_next_wall() as smallest_incomplete_wall_id_ > highest_wall_id_\n");
+                DEBUG(endl << game_->smallest_incomplete_wall_id_ << " > " << highest_wall_id_ << endl);
                 return;
             }
 
@@ -177,24 +185,29 @@ namespace ne {
 
                 auto latest_wall_direction  = latest_wall.direction;
                 auto latest_wall_id         = CUR_USER_BOARD.cell(latest_wall.row, latest_wall.col)->region()->wall_id();
-                std::cout << "\nUnbuilding wall at: " << latest_wall.row << ", " << latest_wall.col << " whose direction was: " << latest_wall_direction << endl;
+                DEBUG("\nUnbuilding wall at: " << latest_wall.row << ", " << latest_wall.col << " whose direction was: " << latest_wall_direction << endl);
 
                 // Step down in wall_id
+                // TODO: Step down correctly
                 if (latest_wall_id != game_->smallest_incomplete_wall_id_)  {
                     assert(latest_wall_id < game_->smallest_incomplete_wall_id_);
                     --game_->smallest_incomplete_wall_id_;
+                    while (game_->walls_for_id_[game_->smallest_incomplete_wall_id_] == false) {
+                        DEBUG("\nNo wall built of id: " << game_->smallest_incomplete_wall_id_);
+                        --game_->smallest_incomplete_wall_id_;
+                    }
                 }
 
                 assert(game_->m_cur_board != 0);
                 UNBUILDABLE_WALL.clear();
                 --game_->m_cur_board;
-                cout << "\nDecrement board: " << game_->m_cur_board << endl;
+                DEBUG("\nDecrement board: " << game_->m_cur_board << endl);
 
                 // Mark this cell as "non-wall"
                 UNBUILDABLE_WALL.push_back(make_pair(latest_wall.row, latest_wall.col));
 
                 // Done unbuilding latest wall
-                game_->draw_board();
+                DRAW(game_->draw_board());
                 break;
 
             }
@@ -223,16 +236,18 @@ namespace ne {
     }
 
     nurikabe::nurikabe(const std::uint32_t rows, const std::uint32_t cols):
+        HIGHEST_WALL_ID(7),
+        wb_(this, HIGHEST_WALL_ID - 1),
         m_rows(rows),
         m_cols(cols),
         //m_board(rows, cols),
         m_boards(100),   // Decide a good number
         m_cur_board(0),
         smallest_incomplete_wall_id_(1),
-        wb_(this, 4)   {
+        walls_for_id_(HIGHEST_WALL_ID, false)   {
             CUR_BOARD.init(rows, cols);
-            //cout << "\nInitial";
-            //draw_board();
+            //DEBUG("\nInitial");
+            DRAW(draw_board());
         }
 
     void nurikabe::set_wall(uint32_t r, uint32_t c, uint32_t v) {
@@ -276,8 +291,8 @@ namespace ne {
             SWEEP_BOARD {
                 if (itr->colour() == 'R')   itr->colour('G');
             }
-            //cout << "\nAfter transformation:\n";
-            //draw_board();
+            //DEBUG("\nAfter transformation:\n");
+            //DRAW(draw_board());
         }
         state = check_for_validity();
         if (state != NO_ERROR_YET)  {
@@ -315,102 +330,40 @@ namespace ne {
 
         bool request_build_new_wall = true;
 
-        while (smallest_incomplete_wall_id_ != 5)   {
-            cerr << "\nTry & build a new wall\n";
+        while (smallest_incomplete_wall_id_ != HIGHEST_WALL_ID)   {
+            DEBUG("\nTry & build a new wall\n");
             wb_.build_next_wall(request_build_new_wall);
-            draw_board();
+            DRAW(draw_board());
 
-            cerr << "\nRunning fill rules:\n";
+            DEBUG("\nRunning fill rules:\n");
             state   = run_fill_rules();
             print_state(state);
 
             CUR_BOARD.update_regions();
             state   = check_for_validity();
             print_state(state);
-            draw_board();   cout << endl;
+            DRAW(draw_board();   DEBUG(endl));
              //Print regions
              //SWEEP_BOARD     {
              //    auto r  = (*itr)->region();
-             //    cout << r->region() << "\t" << r->size() << endl;
+             //    DEBUG(r->region() << "\t" << r->size() << endl);
              //}
 
             if (state == NO_ERROR_YET)  {
-                cerr << "\nWall successfully built:\n";
-                draw_board();
+                DEBUG("\nWall successfully built:\n");
+                DRAW(draw_board());
                 request_build_new_wall  = true;
-                //solve();
+                walls_for_id_[smallest_incomplete_wall_id_] = true; //We built a wall for this id
             }
             else    {
-                cerr << "\nDemolishing previous wall\n";
+                DEBUG("\nDemolishing previous wall\n");
                 wb_.unbuild_latest_wall();
                 request_build_new_wall  = false;
             }
         }
-        return state;
-    }
 
-    nurikabe::game_state_t nurikabe::solve_old()  {
-
-        auto state  = run_fill_rules();
-
-        //cout << "\nGame state after apply fill rules: ";   print_state(state);
-        assert(state == NO_ERROR_YET);
-
-        CUR_BOARD.update_regions();
-
-        //Print regions
-        // SWEEP_BOARD     {
-        //     auto r  = (*itr)->region();
-        //     cout << r->region() << "\t" << r->size() << endl;
-        // }
-
-        char wall_dir = ' '; //Feedback from assume_and_build_wall()
-        if (!game_completed())  {
-            auto new_wall = assume_and_build_wall(wall_dir);
-            while (new_wall != true || wall_dir != ' ')   {   // New wall not yet built
-                new_wall = assume_and_build_wall(wall_dir);
-            }
-            if (wall_dir == ' ')    {
-                // All options for current smallest_incomplete_wall_id_ are tried & failed
-                // Let us roll back on our previously built wall for smallest_incomplete_wall_id_ 
-                --smallest_incomplete_wall_id_;
-                //auto new_wall = assume_and_build_wall(walls_built_.back())
-                    // Build another wall for previos smallest_incomplete_wall_id_
-
-
-            }
-            cout << "\nAfter the assumption: ";
-            draw_board();
-
-            auto assumption_valid   = run_fill_rules();
-
-            while (assumption_valid != NO_ERROR_YET)  { //Backtrack as the recently built new wall is in wrong place
-                CUR_BOARD.reset();                        
-                assert(m_cur_board != 0);
-                --m_cur_board;
-                cout << "\nDecrement board: " << m_cur_board << endl;
-                assert(!game_completed());
-                new_wall = assume_and_build_wall(wall_dir);
-                cout << "\nAfter the assumption: ";
-                draw_board();
-                assumption_valid    = run_fill_rules();
-            }
-
-            if (smallest_incomplete_wall_id_ == 5)   {
-                ;   //Stop solving
-            }
-            else    {
-                cout << "\nCalling solve() recursively: ";
-                solve();
-            }
-            //draw_board();
-        }
-
-        //cout << "\nTest cloning board():";
-        //++m_cur_board;
-        //CUR_BOARD = m_boards[m_cur_board - 1];
-        //assert(CUR_BOARD == m_boards[m_cur_board - 1]);   //TODO: Define board_t::==
-        //draw_board();
+        cout << "\nFinal solution:\n";
+        draw_board();
 
         return state;
     }
@@ -438,16 +391,16 @@ namespace ne {
     }
 
     void nurikabe::print_state(game_state_t s)  {
-        if (s == SOLVED)    cout << "SOLVED";
-        if (s == POOL_EXISTS)    cout << "POOL_EXISTS";
-        if (s == INCOMPLETE)    cout << "INCOMPLETE";
-        if (s == INCOMPLETE_WALLS)    cout << "INCOMPLETE_WALLS";
-        if (s == UNREACHABLE_WATER)    cout << "UNREACHABLE_WATER";
-        if (s == DISCONNECTED_WATER)    cout << "DISCONNECTED_WATER";
-        if (s == OVERLAPPING_ISLANDS)    cout << "OVERLAPPING_ISLANDS";
-        if (s == NO_ERROR_YET)    cout << "NO_ERROR_YET";
-        if (s == UNKNOWN)    cout << "UNKNOWN";
-        cout << endl;
+        if (s == SOLVED)    DEBUG("SOLVED");
+        if (s == POOL_EXISTS)    DEBUG("POOL_EXISTS");
+        if (s == INCOMPLETE)    DEBUG("INCOMPLETE");
+        if (s == INCOMPLETE_WALLS)    DEBUG("INCOMPLETE_WALLS");
+        if (s == UNREACHABLE_WATER)    DEBUG("UNREACHABLE_WATER");
+        if (s == DISCONNECTED_WATER)    DEBUG("DISCONNECTED_WATER");
+        if (s == OVERLAPPING_ISLANDS)    DEBUG("OVERLAPPING_ISLANDS");
+        if (s == NO_ERROR_YET)    DEBUG("NO_ERROR_YET");
+        if (s == UNKNOWN)    DEBUG("UNKNOWN");
+        DEBUG(endl);
     }
 
     void nurikabe::mark_1s_neigh(rcell_t* cell)   {
@@ -516,8 +469,8 @@ namespace ne {
             if (c != nullptr && c->colour() == 'G') c->colour('R');
             c = right(cell, CUR_BOARD);
             if (c != nullptr && c->colour() == 'G') c->colour('R');
-            //draw_board();
-            //cout << "\n2s done";
+            //DRAW(draw_board());
+            //DEBUG("\n2s done");
         }
     }
 
@@ -567,9 +520,9 @@ namespace ne {
                         (l == nullptr || l->colour() == 'B') &&
                         (r == nullptr || r->colour() == 'B')) {
                     assert(cell->colour() != 'W');
-                    //cout << "\nHit a case: " << cell->colour() << endl;
+                    //DEBUG("\nHit a case: " << cell->colour() << endl);
                     if (cell->colour() == 'G')  cell->colour('B');
-                    //cout << "\nNew: " << cell->colour() << endl;
+                    //DEBUG("\nNew: " << cell->colour() << endl);
                 }
             }
         }
@@ -606,114 +559,12 @@ namespace ne {
                 };
 
                 if (1 == greys) {
-                    cout << "\nfill_white_hole(): Setting cell to W: (" << gc->row() << "," << gc->col() << ")";
-                    cout << "\nRelated to cell : (" << cell->row() << ", "<< cell->col() << ")\n";
+                    DEBUG("\nfill_white_hole(): Setting cell to W: (" << gc->row() << "," << gc->col() << ")");
+                    DEBUG("\nRelated to cell : (" << cell->row() << ", "<< cell->col() << ")\n");
                     gc->colour('W');                        
                 }
             }
         }
-    }
-
-    bool nurikabe::build_a_wall(uint32_t id, const char direction)    {
-        
-        assert((direction == 'U') || (direction == 'D') ||
-                (direction == 'L') || (direction == 'R'));
-
-        auto f  = [this](rcell_t* rc, const char c)    {
-            if (c == 'U')   {
-                return up(rc, CUR_BOARD);
-            }
-            else if (c == 'D')  {
-                return down(rc, CUR_BOARD);
-            }
-            else if (c == 'R')  {
-                return right(rc, CUR_BOARD);
-            }
-            else if (c == 'L')  {
-                return left(rc, CUR_BOARD);
-            }
-            else    {
-                assert(0);
-                return rc;
-            }
-        };
-
-        bool built_new_wall = false;
-        
-        SWEEP_BOARD {
-            assert(*itr != nullptr);
-            //TODO: Add assumptions for all numbers 3, 4, 5 etc
-            if (((*itr)->id() == id) && ((*itr)->region()->region() == region_t::INCOMPLETE_WALL_REGION))  {
-                //auto u  = up(*itr, CUR_BOARD);
-                auto u  = f(*itr, direction);
-                //TODO: Add down, L & R
-                if ((u != nullptr) && (u->colour() == 'G') && (!CUR_BOARD.is_wall(u))) {
-                    
-                    // Clone our current board
-                    m_boards[m_cur_board + 1]   = m_boards[m_cur_board];
-                    ++m_cur_board;
-                    cout << "\nIncrement board: " << m_cur_board << endl;
-                    
-                    auto r  = u->row();
-                    auto c  = u->col();
-
-                    cout << "\nWill assume & set this cell to W: (" << r << ", " << c << ")\n";
-                    CUR_BOARD.cell(r, c)->colour('W'); // Assume this cell to be our Wall
-                    CUR_BOARD.update_region(CUR_BOARD.cell(r, c));
-                    auto new_cell   = CUR_BOARD.cell(r, c);
-                    //assert(new_cell->region()->region() == region_t::COMPLETE_WALL_REGION);
-                    //assert(down(new_cell, CUR_BOARD)->region()->region() == region_t::COMPLETE_WALL_REGION);
-                    //assert(new_cell->region() == down(new_cell, CUR_BOARD)->region());
-                    //TODO::Continue here: Re enable above comment
-                    
-                    auto result_state   = check_for_validity();
-                    if (NO_ERROR_YET != result_state)  {
-                        cout << "Undoing the move becuase :";
-                        print_state(result_state);
-                        u->colour('G');
-                        //CUR_BOARD.reset();
-                        --m_cur_board;  //Backtrack
-                        cout << "\nDecrement board: " << m_cur_board << endl;
-                    }
-                    else {
-                        cout << "Valid move becuase :";
-                        print_state(result_state);
-                        built_new_wall  = true;
-                        //draw_board();
-                        walls_built_.push_back(make_pair(make_pair(r, c), direction));
-                        break;
-                    }
-                }
-            }
-        }
-        return built_new_wall;
-    }
-
-    bool nurikabe::assume_and_build_wall(char& wall_direction)  {
-        if (wall_direction == ' ')   {
-            wall_direction = 'U';   //1st attempt
-        }
-        else if (wall_direction == 'U') {
-            wall_direction = 'D';
-        }
-        else if (wall_direction == 'D') {
-            wall_direction = 'R';
-        }
-        else if (wall_direction == 'R')    {
-            wall_direction = 'L';
-        }
-        else    {
-            assert(wall_direction == 'L');   
-            wall_direction = 'U';
-        }
-
-        bool built_new_wall     = build_a_wall(smallest_incomplete_wall_id_, wall_direction);
-        
-        if (!built_new_wall && (wall_direction == 'R'))    {
-            //Consider net higher numbered wall for building as current number is exhausted
-            ++smallest_incomplete_wall_id_;
-        }
-        return built_new_wall;
     }
 
     nurikabe::game_state_t nurikabe::game_solved() {
@@ -750,7 +601,7 @@ namespace ne {
             if ((reg->region() == region_t::WATER_REGION) && (reg->size() >= 4))    {
                 auto cells = reg->cells();
                 //for (auto c : cells)    {
-                //    cout << c->colour() << "\t" << endl;
+                //    DEBUG(c->colour() << "\t" << endl);
                 //}
                 for (auto* c : cells)    {
                     assert(c->colour() == 'B');
@@ -767,7 +618,7 @@ namespace ne {
                     auto rd = down(r, CUR_BOARD);
                     if ((rd != nullptr) && (reg == rd->region())) {
                         assert(rd->colour() == 'B');
-                        cerr << "\nPool at: " << c->row() << ", " << c->col() << endl;
+                        DEBUG("\nPool at: " << c->row() << ", " << c->col() << endl);
                         return true;
                     }
                 }
@@ -781,11 +632,13 @@ namespace ne {
             if (itr->colour() == 'W')   {
                 auto r  = right(*itr, CUR_BOARD);
                 if (r != nullptr && CUR_BOARD.is_wall(r) && (itr->region() != r->region()))   {
+                    DEBUG("\nOverlapping islands Right at (" << itr->row() << ", " << itr->col() << ")\n");
                     return true;    // 2 different regions are wallls & adjacent                    
                 }
 
                 auto d  = down(*itr, CUR_BOARD);
                 if (d != nullptr && CUR_BOARD.is_wall(d) && (itr->region() != d->region()))   {
+                    DEBUG("\nOverlapping islands Down at (" << itr->row() << ", " << itr->col() << ")\n");
                     return true;    // 2 different regions are wallls & adjacent                    
                 }
             }
@@ -857,7 +710,7 @@ namespace ne {
                             ((d == nullptr) || (d->colour() == 'W')) &&
                             ((l == nullptr) || (l->colour() == 'W')) &&
                             ((r == nullptr) || (r->colour() == 'W')))   {
-                    cout << "\nUnreachable water at (" << itr->row() << ", " << itr->col() << ")\n";
+                    DEBUG("\nUnreachable water at (" << itr->row() << ", " << itr->col() << ")\n");
                     return true;
                 }
             }

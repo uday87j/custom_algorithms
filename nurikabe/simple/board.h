@@ -6,6 +6,9 @@
 #include <vector>
 #include <memory>
 #include <iterator>
+#include <cstdint>
+
+using std::uint32_t;
 
 namespace ne {
 

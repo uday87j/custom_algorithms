@@ -62,6 +62,8 @@ namespace ne    {
             void reset();
 
         private:
+            const uint32_t HIGHEST_WALL_ID;
+
             friend class wall_builder_t;
 
             void draw_board();
@@ -77,8 +79,6 @@ namespace ne    {
             void mark_unreachables(rcell_t*);
             void fill_black_hole(rcell_t*);// A non-wall is surrounded by 'B'
             void fill_white_hole(rcell_t*);// An incomplete wall will expand if there is only one possible way
-            bool build_a_wall(uint32_t id, const char direction);
-            bool assume_and_build_wall(char& wall_direction);
             
 
             // Helper functions for accessiblity
@@ -98,7 +98,6 @@ namespace ne    {
             bool any_incomplete_walls_of_id(uint32_t w_id);
 
             void print_state(game_state_t);
-            game_state_t solve_old();   //Remove this later
 
             uint32_t m_rows;
             uint32_t m_cols;
@@ -108,6 +107,8 @@ namespace ne    {
             // Tracking to solve steps
             uint32_t smallest_incomplete_wall_id_;
             std::vector<std::pair<std::pair<uint32_t, uint32_t>, char> > walls_built_;
+            std::vector<bool> walls_for_id_;
+
     };
 
 }
