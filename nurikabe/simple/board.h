@@ -95,6 +95,9 @@ namespace ne {
             uint32_t wall_id();
             void set_wall_id(uint32_t w_id);
 
+            void set_wall_leader(uint32_t row, uint32_t col);
+            std::pair<uint32_t, uint32_t> get_wall_leader();
+
             bool is_wall()  { return (region_ == COMPLETE_WALL_REGION) ||
                 (region_ == INCOMPLETE_WALL_REGION);    }
 
@@ -105,6 +108,7 @@ namespace ne {
             rcells_t cells_;
             uint32_t wall_;
             board_t* board_;
+            std::pair<uint32_t, uint32_t> wall_leader_;
     };
 
 

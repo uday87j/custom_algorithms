@@ -94,10 +94,31 @@ void puzzle_11(nurikabe& nk) {
     nk.set_wall(5,3,1);
 }
 
+void puzzle_12(nurikabe& nk) {
+    nk.set_wall(0,0,2);
+    nk.set_wall(0,9,2);
+    nk.set_wall(1,6,2);
+    nk.set_wall(2,1,2);
+    nk.set_wall(2,4,7);
+    nk.set_wall(4,6,3);
+    nk.set_wall(4,8,3);
+    nk.set_wall(5,2,2);
+    nk.set_wall(5,7,3);
+    nk.set_wall(6,0,2);
+    nk.set_wall(6,3,4);
+    nk.set_wall(8,1,1);
+    nk.set_wall(8,6,2);
+    nk.set_wall(8,8,4);
+    
+}
+
+
 int main()  {
 
 #ifdef DONT_RUN_ME
+#endif
     {
+        auto start  = system_clock::now();
         cout << "\nPuzzle 1\n";
        
         nurikabe solver(5, 5);
@@ -105,11 +126,14 @@ int main()  {
         puzzle_1(solver);
 
         solver.solve();
+        auto finish = system_clock::now();
+        cout << "\nTime taken to solve: " << duration_cast<milliseconds>(finish - start).count() << " ms\n";
 
         solver.reset();
     }
 
     {
+        auto start  = system_clock::now();
         cout << "\nPuzzle 2\n";
 
         nurikabe solver(5, 5);
@@ -117,11 +141,14 @@ int main()  {
         puzzle_2(solver);
         
         solver.solve();
+        auto finish = system_clock::now();
+        cout << "\nTime taken to solve: " << duration_cast<milliseconds>(finish - start).count() << " ms\n";
         
         solver.reset();
     }
     
     {
+        auto start  = system_clock::now();
         cout << "\nPuzzle 3\n";
 
         nurikabe solver(5, 5);
@@ -129,11 +156,14 @@ int main()  {
         puzzle_3(solver);
         
         solver.solve();
+        auto finish = system_clock::now();
+        cout << "\nTime taken to solve: " << duration_cast<milliseconds>(finish - start).count() << " ms\n";
         
         solver.reset();
     }
 
     {
+        auto start  = system_clock::now();
         cout << "\nPuzzle 4\n";
 
         nurikabe solver(5, 5);
@@ -141,11 +171,14 @@ int main()  {
         puzzle_4(solver);
         
         solver.solve();
+        auto finish = system_clock::now();
+        cout << "\nTime taken to solve: " << duration_cast<milliseconds>(finish - start).count() << " ms\n";
         
         solver.reset();
     }
 
     {
+        auto start  = system_clock::now();
         cout << "\nPuzzle 5\n";
 
         nurikabe solver(5, 5);
@@ -153,11 +186,14 @@ int main()  {
         puzzle_5(solver);
         
         solver.solve();
+        auto finish = system_clock::now();
+        cout << "\nTime taken to solve: " << duration_cast<milliseconds>(finish - start).count() << " ms\n";
         
         solver.reset();
     }
 
     {
+        auto start  = system_clock::now();
         cout << "\nPuzzle 6\n";
 
         nurikabe solver(5, 5);
@@ -165,11 +201,14 @@ int main()  {
         puzzle_6(solver);
         
         solver.solve();
+        auto finish = system_clock::now();
+        cout << "\nTime taken to solve: " << duration_cast<milliseconds>(finish - start).count() << " ms\n";
         
         solver.reset();
     }
 
     {
+        auto start  = system_clock::now();
         cout << "\nPuzzle 8\n";
 
         nurikabe solver(5, 5);
@@ -177,11 +216,14 @@ int main()  {
         puzzle_8(solver);
         
         solver.solve();
+        auto finish = system_clock::now();
+        cout << "\nTime taken to solve: " << duration_cast<milliseconds>(finish - start).count() << " ms\n";
         
         solver.reset();
     }
 
     {
+        auto start  = system_clock::now();
         cout << "\nPuzzle 9\n";
 
         nurikabe solver(5, 5);
@@ -189,11 +231,14 @@ int main()  {
         puzzle_9(solver);
         
         solver.solve();
+        auto finish = system_clock::now();
+        cout << "\nTime taken to solve: " << duration_cast<milliseconds>(finish - start).count() << " ms\n";
         
         solver.reset();
     }
 
     {
+        auto start  = system_clock::now();
         cout << "\nPuzzle 10\n";
 
         nurikabe solver(5, 5);
@@ -201,10 +246,11 @@ int main()  {
         puzzle_10(solver);
         
         solver.solve();
+        auto finish = system_clock::now();
+        cout << "\nTime taken to solve: " << duration_cast<milliseconds>(finish - start).count() << " ms\n";
         
         solver.reset();
     }
-#endif
 
     {
         auto start  = system_clock::now();
@@ -222,6 +268,7 @@ int main()  {
     }
 
 #ifdef DONT_RUN_ME
+#endif
 
     {
         auto start  = system_clock::now();
@@ -237,7 +284,21 @@ int main()  {
         
         solver.reset();
     }
-#endif
+    
+    {
+        auto start  = system_clock::now();
+        cout << "\nPuzzle 12\n";
+
+        nurikabe solver(9, 10);
+
+        puzzle_12(solver);
+        
+        solver.solve();
+        auto finish = system_clock::now();
+        cout << "\nTime taken to solve: " << duration_cast<milliseconds>(finish - start).count() << " ms\n";
+        
+        solver.reset();
+    }
 
     return 0;
 }

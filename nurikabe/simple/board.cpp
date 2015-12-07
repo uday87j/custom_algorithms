@@ -12,6 +12,7 @@ namespace ne    {
     region_t::region_t(board_t* bptr)
         : region_(UNKNOWN_REGION),
         wall_(0),
+        wall_leader_(std::make_pair(-1, -1)),
         board_(bptr)    {}
 
     region_t::region_t(const region_t& r)  {
@@ -19,6 +20,7 @@ namespace ne    {
         cells_.reserve(r.cells_.size());
         std::copy(begin(r.cells_), end(r.cells_), begin(cells_)); //Only pointer (shallow) copy
         wall_   = r.wall_;
+        wall_leader_ = r.wall_leader_;
         board_  = r.board_;
     }
     
@@ -28,6 +30,7 @@ namespace ne    {
         cells_.resize(max(r.cells_.size(), cells_.size()));
         std::copy(begin(r.cells_), end(r.cells_), begin(cells_)); //Only pointer (shallow) copy
         wall_   = r.wall_;
+        wall_leader_ = r.wall_leader_;
         board_  = r.board_;
         return *this;
     }
@@ -50,16 +53,15 @@ namespace ne    {
                     region_ == COMPLETE_WALL_REGION)    {
 
                 assert(board_->is_wall(c));
+                
                 wall_   = min(wall_, c->id());
                 wall_   = min(wall_, c->region()->wall_id());
                 assert(wall_ != numeric_limits<uint32_t>::max());
-                //if (c->id() != numeric_limits<uint32_t>::max())   {
-                //    if (wall_ != numeric_limits<uint32_t>::max()) {
-                //        wall_   = c->id();
-                //    }
-                //}
+                assert(wall_ == board_->cell(wall_leader_.first, wall_leader_.second)->id());
+
                 cells_.push_back(c);
                 //assert(cells_.size() >= wall_);   //TODO: Required?
+                
                 if (cells_.size() == wall_)    {
                     region_ = COMPLETE_WALL_REGION;
                 }
@@ -68,7 +70,13 @@ namespace ne    {
                 assert(region_ == WATER_REGION || region_ == UNKNOWN_REGION);
                 if(board_->is_wall(c))  {
                     assert(region_ == UNKNOWN_REGION);
+
                     wall_   = c->id();
+                    assert(wall_ != numeric_limits<uint32_t>::max());
+
+                    wall_leader_.first = c->row();
+                    wall_leader_.second = c->col();
+
                     if (wall_ == 1) {
                         region_ = COMPLETE_WALL_REGION;
                     }
@@ -96,7 +104,17 @@ namespace ne    {
                     region_ = WATER_REGION;
                 }
                 else if (board_->is_wall(c))    {
+                    
                     wall_   = c->id();
+                    //assert(wall_ != numeric_limits<uint32_t>::max());
+
+                    if (wall_ != numeric_limits<uint32_t>::max())   {
+                        assert(wall_leader_.first == -1);
+                        assert(wall_leader_.second == -1);
+                        wall_leader_.first = c->row();
+                        wall_leader_.second = c->col();
+                    }
+
                     if (wall_ == 1) {
                         region_ = COMPLETE_WALL_REGION;
                     }
@@ -141,6 +159,15 @@ namespace ne    {
     uint32_t region_t::wall_id()    { return wall_; }
     void region_t::set_wall_id(uint32_t w_id)   { wall_ = w_id; }
 
+    void region_t::set_wall_leader(uint32_t row, uint32_t col)    {
+        wall_leader_.first = row;
+        wall_leader_.second = col;
+    }
+
+    std::pair<uint32_t, uint32_t> region_t::get_wall_leader() {
+        return wall_leader_;
+    }
+
     void region_t::merge_with_region(region_t* r)   {
         assert(r != nullptr);
         if (r->region() == COMPLETE_WALL_REGION ||
@@ -149,7 +176,9 @@ namespace ne    {
         }
         if (this->is_wall() &&
                 r->is_wall())  {
-            if (this->wall_ != r->wall_)    {
+            //if (this->wall_ != r->wall_)    {
+            if (this->wall_leader_.first != r->wall_leader_.first ||
+                    this->wall_leader_.second != r->wall_leader_.second)    {
                 return; //Don't merge 2 independent walls
             }
         }

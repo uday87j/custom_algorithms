@@ -84,9 +84,15 @@ namespace ne {
                         DEBUG("\nWill assume & set this cell to W: (" << r << ", " << c << ")\n");
 
                         cell->colour('W'); // Assume this cell to be our Wall
+
                         DEBUG("\nSetting cell to W: (" << r << "," << c << ")\n");
                         DRAW(game_->draw_board());
+                        
                         cell->region()->set_wall_id(itr->region()->wall_id());
+
+                        auto w_leader = itr->region()->get_wall_leader();
+                        cell->region()->set_wall_leader(w_leader.first, w_leader.second);
+
                         CUR_USER_BOARD.update_region(cell);
 
                         return u;
@@ -236,7 +242,7 @@ namespace ne {
     }
 
     nurikabe::nurikabe(const std::uint32_t rows, const std::uint32_t cols):
-        HIGHEST_WALL_ID(7),
+        HIGHEST_WALL_ID(8),
         wb_(this, HIGHEST_WALL_ID - 1),
         m_rows(rows),
         m_cols(cols),
