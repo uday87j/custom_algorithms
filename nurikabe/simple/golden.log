@@ -1,0 +1,145 @@
+
+Puzzle 1
+
+Final solution:
+
+
+B  B  B  B  B  
+B  4  W  B  W  
+B  W  W  B  2  
+B  B  B  B  B  
+B  2  W  B  1  
+
+Time taken to solve: 0 ms
+
+Puzzle 2
+
+Final solution:
+
+
+W  W  B  W  W  
+W  4  B  4  W  
+B  B  B  B  B  
+W  4  B  4  W  
+W  W  B  W  W  
+
+Time taken to solve: 0 ms
+
+Puzzle 3
+
+Final solution:
+
+
+W  3  B  1  B  
+W  B  B  B  B  
+B  B  W  W  B  
+2  B  W  B  B  
+W  B  4  B  1  
+
+Time taken to solve: 0 ms
+
+Puzzle 4
+
+Final solution:
+
+
+B  W  2  B  B  
+B  B  B  B  W  
+1  B  W  B  3  
+B  B  W  B  W  
+B  W  4  B  B  
+
+Time taken to solve: 1 ms
+
+Puzzle 5
+
+Final solution:
+
+
+B  B  W  3  W  
+2  B  B  B  B  
+W  B  W  W  B  
+B  B  B  W  4  
+B  1  B  B  B  
+
+Time taken to solve: 2 ms
+
+Puzzle 6
+
+Final solution:
+
+
+1  B  B  B  B  
+B  W  W  B  1  
+B  5  W  B  B  
+B  W  B  B  W  
+B  B  B  W  3  
+
+Time taken to solve: 4 ms
+
+Puzzle 8
+
+Final solution:
+
+
+2  W  B  B  B  
+B  B  B  W  B  
+1  B  W  W  B  
+B  W  6  W  B  
+B  B  B  B  B  
+
+Time taken to solve: 26 ms
+
+Puzzle 9
+
+Final solution:
+
+
+3  B  1  B  W  
+W  B  B  B  W  
+W  B  W  B  W  
+B  B  W  B  W  
+B  W  4  B  5  
+
+Time taken to solve: 0 ms
+
+Puzzle 10
+
+Final solution:
+
+
+B  W  W  3  B  
+B  B  B  B  B  
+B  1  B  6  W  
+W  B  B  W  W  
+W  3  B  W  W  
+
+Time taken to solve: 22 ms
+
+Puzzle 11
+
+Final solution:
+
+
+B  B  2  W  B  B  
+W  B  B  B  1  B  
+4  W  W  B  B  B  
+B  B  B  B  W  3  
+B  2  W  B  B  W  
+B  B  B  1  B  B  
+
+Time taken to solve: 37 ms
+
+Puzzle 7
+
+Final solution:
+
+
+B  2  B  B  B  2  
+B  W  B  W  B  W  
+B  B  B  2  B  B  
+2  W  B  B  B  W  
+B  B  B  W  B  2  
+2  W  B  2  B  B  
+
+Time taken to solve: 0 ms

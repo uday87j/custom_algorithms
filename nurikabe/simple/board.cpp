@@ -176,13 +176,11 @@ namespace ne    {
         }
         if (this->is_wall() &&
                 r->is_wall())  {
-            //if (this->wall_ != r->wall_)    {
             if (this->wall_leader_.first != r->wall_leader_.first ||
                     this->wall_leader_.second != r->wall_leader_.second)    {
                 return; //Don't merge 2 independent walls
             }
         }
-        //TODO: Add if() for not merging independent wall w/ same wall_
         for(auto& c : r->cells())    {
             c->join_region(this) ;
             assert(this == c->region());
@@ -220,7 +218,6 @@ namespace ne    {
         
         // Let's change those pointers to point into our cells & regions
         //DEBUG("\nNum regions: " << b.regions().size() << endl);
-        //TODO: Revisit: something wrong here!
         auto ref_regions    = b.regions();
         assert(ref_regions.size() == rows_*cols_);
         for(auto i = 0; i < rows_*cols_; ++i)   {
@@ -259,14 +256,17 @@ namespace ne    {
 
         cells_.clear();
         regions_.clear();
-        
+
+        regions_.reserve(rows*cols);
+        cells_.reserve(rows*cols);
+
         for(auto i = 0; i < rows*cols; ++i, ++c)   {
             if (i % cols == 0)  {
                 ++r;
                 c   = 0;
             }
             
-            regions_.emplace_back(unique_ptr<region_t>(new region_t(this)));
+            regions_.emplace_back(unique_ptr<region_t>(new region_t(this)));//TODO: Can we allocate in bulk?
             
             cells_.emplace_back(unique_ptr<rcell_t>(new rcell_t(regions_[i].get())));
             set_cell_attr(*cells_[i], numeric_limits<uint32_t>::max(), 'G', r, c);

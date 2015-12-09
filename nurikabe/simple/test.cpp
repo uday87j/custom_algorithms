@@ -112,6 +112,16 @@ void puzzle_12(nurikabe& nk) {
     
 }
 
+void puzzle_13(nurikabe& nk) {
+    nk.set_wall(0,2,3);
+    nk.set_wall(1,6,4);
+    nk.set_wall(2,0,4);
+    nk.set_wall(3,3,2);
+    nk.set_wall(4,4,3);
+    nk.set_wall(5,7,2);
+    nk.set_wall(6,1,2);
+    nk.set_wall(7,5,4);
+}
 
 int main()  {
 
@@ -284,22 +294,36 @@ int main()  {
         
         solver.reset();
     }
+
+    //{
+    //    auto start  = system_clock::now();
+    //    cout << "\nPuzzle 13\n";
+
+    //    nurikabe solver(8, 8);
+
+    //    puzzle_13(solver);
+    //    
+    //    solver.solve();
+    //    auto finish = system_clock::now();
+    //    cout << "\nTime taken to solve: " << duration_cast<milliseconds>(finish - start).count() << " ms\n";
+    //    
+    //    solver.reset();
+    //}
     
-    {
-        auto start  = system_clock::now();
-        cout << "\nPuzzle 12\n";
+    //{
+    //    auto start  = system_clock::now();
+    //    cout << "\nPuzzle 12\n";
 
-        nurikabe solver(9, 10);
+    //    nurikabe solver(9, 10);
 
-        puzzle_12(solver);
-        
-        solver.solve();
-        auto finish = system_clock::now();
-        cout << "\nTime taken to solve: " << duration_cast<milliseconds>(finish - start).count() << " ms\n";
-        
-        solver.reset();
-    }
+    //    puzzle_12(solver);
+    //    
+    //    solver.solve();
+    //    auto finish = system_clock::now();
+    //    cout << "\nTime taken to solve: " << duration_cast<milliseconds>(finish - start).count() << " ms\n";
+    //    
+    //    solver.reset();
+    //}
 
     return 0;
 }
-//TODO: Step down wall_id multiple times when there was no wall built for that id
