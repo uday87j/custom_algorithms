@@ -1,0 +1,4 @@
+There are 0 args
+Source files: test_kmeans.cpp
+CFLAGS = -std=c++11 -O3
+CLANG = clang++-3.5
