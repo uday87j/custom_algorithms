@@ -2,7 +2,7 @@
 #include "sort.h"
 #include "rank.h"
 #include "erase.h"
-//#include "closest_pair.h"
+#include "closest_pair.h"
 #include "kmeans.h"
 #include "mode.h"
 #include "struct_size.h"
