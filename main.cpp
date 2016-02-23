@@ -5,6 +5,7 @@
 //#include "closest_pair.h"
 #include "kmeans.h"
 #include "mode.h"
+#include "struct_size.h"
 
 using namespace std;
 using namespace ca;
@@ -20,8 +21,9 @@ int main()  {
     test_cp_methods();
     test_closest_pair();
     test_kmeans();
-#endif
     test_mode();
+#endif
+    test_struct_size();
 
     return 0;
 }
