@@ -1,3 +1,4 @@
+#include "print.h"
 #include "erase.h"
 
 using namespace ca;

@@ -1,6 +1,8 @@
 #ifndef MY_PARTITION_H_
 #define MY_PARTITION_H_
 
+#include "ca_util.h"
+
 #include <algorithm>
 #include <iostream>
 #include <iterator>

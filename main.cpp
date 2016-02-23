@@ -2,7 +2,9 @@
 #include "sort.h"
 #include "rank.h"
 #include "erase.h"
-#include "closest_pair.h"
+//#include "closest_pair.h"
+#include "kmeans.h"
+#include "mode.h"
 
 using namespace std;
 using namespace ca;
@@ -16,8 +18,10 @@ int main()  {
     test_rank();
     test_erase();
     test_cp_methods();
-#endif
     test_closest_pair();
+    test_kmeans();
+#endif
+    test_mode();
 
     return 0;
 }
