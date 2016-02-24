@@ -11,13 +11,15 @@ namespace ne    {
 
     region_t::region_t(board_t* bptr)
         : region_(UNKNOWN_REGION),
+        size_(0),
         wall_(0),
         wall_leader_(std::make_pair(-1, -1)),
         board_(bptr)    {}
 
     region_t::region_t(const region_t& r)  {
-        region_ = r. region_;
-        cells_.reserve(r.cells_.size());
+        region_ = r.region_;
+        size_   = r.size_;
+        cells_.reserve(size_);
         std::copy(begin(r.cells_), end(r.cells_), begin(cells_)); //Only pointer (shallow) copy
         wall_   = r.wall_;
         wall_leader_ = r.wall_leader_;
@@ -26,8 +28,9 @@ namespace ne    {
     
     region_t& region_t::operator = (const region_t& r) {
         region_ = r. region_;
+        size_   = max(r.size_, size_);
         //cells_.reserve(max(r.cells_.size(), cells_.size()));
-        cells_.resize(max(r.cells_.size(), cells_.size()));
+        cells_.resize(size_);
         std::copy(begin(r.cells_), end(r.cells_), begin(cells_)); //Only pointer (shallow) copy
         wall_   = r.wall_;
         wall_leader_ = r.wall_leader_;
@@ -40,7 +43,7 @@ namespace ne    {
     }
 
     void region_t::set_cell_ptr(region_cell_t<std::uint32_t>* rc, uint32_t index) {
-        if ((index < cells_.size()) && (rc != nullptr))  {
+        if ((index < size_) && (rc != nullptr))  {
             cells_[index]   = rc;
         }
     }
@@ -59,10 +62,11 @@ namespace ne    {
                 assert(wall_ != numeric_limits<uint32_t>::max());
                 assert(wall_ == board_->cell(wall_leader_.first, wall_leader_.second)->id());
 
+                ++size_;
                 cells_.push_back(c);
                 //assert(cells_.size() >= wall_);   //TODO: Required?
                 
-                if (cells_.size() == wall_)    {
+                if (size_ == wall_)    {
                     region_ = COMPLETE_WALL_REGION;
                 }
             }
@@ -91,6 +95,7 @@ namespace ne    {
                         }
                     }
                 }
+                ++size_;
                 cells_.push_back(c);
                 assert(c->region() == this);
             }
@@ -126,7 +131,7 @@ namespace ne    {
             else if (region_ == INCOMPLETE_WALL_REGION)   {
                 assert((board_->is_wall(c)) ||
                         (c->colour() == 'G')); //Happens in backtracking
-                if (cells_.size() == wall_)    {
+                if (size_ == wall_)    {
                     region_ = COMPLETE_WALL_REGION;
                 }
             }

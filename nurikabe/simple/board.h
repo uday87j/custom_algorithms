@@ -78,7 +78,7 @@ namespace ne {
 
             rcells_t cells() const;
 
-            size_t size() const     { return cells_.size(); }
+            size_t size() const     { return size_; }
 
             void set_board(board_t* b);
             void set_cell_ptr(region_cell_t<std::uint32_t>* rc, uint32_t index);
@@ -105,6 +105,7 @@ namespace ne {
         private:
 
             region_type region_;
+            size_t size_;   // cache cells_.size()
             rcells_t cells_;
             uint32_t wall_;
             board_t* board_;

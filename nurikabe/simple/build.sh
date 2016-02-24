@@ -19,4 +19,4 @@ fi
 echo "Source files: $SRC"
 echo "CFLAGS = $CFLAGS"
 
-$CLANG $CFLAGS $SRC -o nurik
+$COMPILER $CFLAGS $SRC -o nurik
